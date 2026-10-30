@@ -1,0 +1,6 @@
+{
+  "name": "KK Translator JP - Terjemahan Kartu Keluarga Indonesia ke Bahasa Jepang",
+  "description": "Aplikasi penerjemah resmi Kartu Keluarga (KK) Indonesia ke dokumen kependudukan bahasa Jepang resmi (戸籍謄本 / 家族登録証明書) untuk pengajuan visa, imigrasi (出入国在留管理庁), dan balai kota (役所) dengan live preview spreadsheet resmi dan ekspor PDF A4 Landscape.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: "MS PGothic", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", -apple-system, sans-serif;
+    background-color: #f1f5f9;
+    color: #000000;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Document Paper & Table Standards matching Japanese Official Koseki Tohon Sheet */
+.document-outer-frame {
+  background: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.12);
+  color: #000000;
+  line-height: 1.25;
+  box-sizing: border-box;
+}
+
+/* Precision government table grid */
+.kk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  table-layout: fixed;
+}
+
+.kk-table th,
+.kk-table td {
+  border: 1px solid #000000 !important;
+  padding: 2px 3px;
+  text-align: center;
+  vertical-align: middle;
+  word-break: break-word;
+  color: #000000;
+}
+
+.kk-table th {
+  background-color: #f0f0f0 !important;
+  font-weight: bold;
+}
+
+.text-left {
+  text-align: left !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+/* Hanko Seal */
+.hanko-seal {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 2px solid #dc2626;
+  border-radius: 50%;
+  color: #dc2626;
+  font-weight: 900;
+  user-select: none;
+  transform: rotate(-3deg);
+  background: rgba(254, 242, 242, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.25);
+  font-family: 'Noto Serif JP', serif;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+}
+
+/* Print Rules - Wajib A4 Landscape (297mm x 210mm) dengan margin 8mm 10mm */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm 10mm;
+  }
+
+  *, *:before, *:after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-family: "MS PGothic", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-area-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .document-outer-frame {
+    box-shadow: none !important;
+    border: 1.5px solid #000000 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 6mm 8mm !important;
+    margin: 0 !important;
+    font-size: 8.5pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .kk-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 8.5pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .kk-table th, 
+  .kk-table td {
+    border: 1px solid #000000 !important;
+    padding: 1.5px 3px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    color: #000000 !important;
+  }
+
+  .kk-table th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .text-left {
+    text-align: left !important;
+  }
+
+  .hanko-seal {
+    border-color: #dc2626 !important;
+    color: #dc2626 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
