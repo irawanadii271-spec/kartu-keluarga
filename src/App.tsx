@@ -24,6 +24,7 @@ export default function App() {
   });
 
   const [viewMode, setViewMode] = useState<'split' | 'preview' | 'editor'>('split');
+  const [showColumnIndices, setShowColumnIndices] = useState<boolean>(true);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
   const [isGoogleDriveModalOpen, setIsGoogleDriveModalOpen] = useState<boolean>(false);
@@ -166,9 +167,20 @@ export default function App() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-slate-500 hidden sm:inline">
-                    *セルをクリックして直接編集可能
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowColumnIndices((prev) => !prev)}
+                    className={`px-2.5 py-1.5 rounded text-[11px] font-medium border transition-colors ${
+                      showColumnIndices
+                        ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                        : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-500'
+                    }`}
+                    title="Tampilkan / sembunyikan baris nomor indeks kolom (1) s/d (15)"
+                  >
+                    Nomor Kolom (1)-(15): {showColumnIndices ? 'Aktif' : 'Nonaktif'}
+                  </button>
+
+                  <span className="text-[11px] text-slate-400 hidden sm:inline">|</span>
 
                   <button
                     type="button"
@@ -187,6 +199,7 @@ export default function App() {
                 <PreviewSheet
                   data={data}
                   onUpdateData={setData}
+                  showColumnIndices={showColumnIndices}
                 />
               </div>
             </div>

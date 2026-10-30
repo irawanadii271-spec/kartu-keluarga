@@ -41,6 +41,14 @@
 .kk-table th {
   background-color: #f0f0f0 !important;
   font-weight: bold;
+  font-size: 8.5pt;
+}
+
+.header-indices-row th {
+  background-color: #f5f5f5 !important;
+  font-weight: normal !important;
+  font-size: 7.5pt !important;
+  padding: 1px 2px !important;
 }
 
 .text-left {
