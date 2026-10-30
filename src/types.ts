@@ -134,6 +134,116 @@ export const VOCABULARY: TranslationDictionary = {
   },
 };
 
+// Structured lists categorized exactly matching user's official spreadsheet
+export const GENDER_OPTIONS = [
+  { idKey: 'Laki', jpVal: '男', fullJp: '男性', display: '男性 / 男 (Laki)' },
+  { idKey: 'Perempuan', jpVal: '女', fullJp: '女性', display: '女性 / 女 (Perempuan)' },
+];
+
+export const RELIGION_OPTIONS = [
+  { idKey: 'Islam', jpVal: 'イスラム教' },
+  { idKey: 'Kristen', jpVal: 'キリスト教' },
+  { idKey: 'Katolik', jpVal: 'カトリック' },
+  { idKey: 'Hindu', jpVal: 'ヒンドゥー教' },
+  { idKey: 'Buddha', jpVal: '仏教' },
+];
+
+export const MARITAL_STATUS_OPTIONS = [
+  { idKey: 'Belum Kawin', jpVal: '未婚' },
+  { idKey: 'Kawin', jpVal: '既婚' },
+  { idKey: 'Cerai Hidup', jpVal: '離婚' },
+  { idKey: 'Cerai Mati', jpVal: '死別' },
+];
+
+export const EDUCATION_OPTIONS = [
+  { idKey: 'Tidak / Belum Sekolah', jpVal: '学歴なし' },
+  { idKey: 'Belum Tamat SD', jpVal: '小学校未卒' },
+  { idKey: 'Tamat SD / Sederajat', jpVal: '小学校卒業' },
+  { idKey: 'SLTP / Sederajat', jpVal: '中学校卒業' },
+  { idKey: 'SLTA / Sederajat', jpVal: '高校卒業' },
+  { idKey: 'Diploma I / II', jpVal: '短大' },
+  { idKey: 'Akademi / Diploma III / Sarjana Muda', jpVal: '専門学校' },
+  { idKey: 'Diploma IV / Strata I', jpVal: '大学' },
+  { idKey: 'Strata II', jpVal: '大学院' },
+  { idKey: 'Strata III', jpVal: '博士課程' },
+];
+
+export const RELATION_STATUS_OPTIONS = [
+  { idKey: 'Kepala Keluarga', jpVal: '家長' },
+  { idKey: 'Suami', jpVal: '夫' },
+  { idKey: 'Istri', jpVal: '妻' },
+  { idKey: 'Anak', jpVal: '子' },
+  { idKey: 'Menantu', jpVal: '義理の子' },
+  { idKey: 'Cucu', jpVal: '孫' },
+  { idKey: 'Orangtua', jpVal: '両親' },
+  { idKey: 'Mertua', jpVal: '義理の親' },
+  { idKey: 'Famili Lain', jpVal: '他の家族' },
+  { idKey: 'Pembantu', jpVal: '使用人' },
+  { idKey: 'Lainnya', jpVal: 'その他' },
+];
+
+export interface OccupationGroup {
+  categoryName: string;
+  items: { idKey: string; jpVal: string }[];
+}
+
+export const OCCUPATION_CATEGORIES: OccupationGroup[] = [
+  {
+    categoryName: '1. Umum, Pendidikan & Pelajar',
+    items: [
+      { idKey: 'Belum / Tidak Bekerja', jpVal: '未就労' },
+      { idKey: 'Pelajar', jpVal: '学生' },
+      { idKey: 'Mengurus Rumah Tangga', jpVal: '家事' },
+      { idKey: 'Pensiunan', jpVal: '定年' },
+    ],
+  },
+  {
+    categoryName: '2. Karyawan Swasta, Usaha & Media',
+    items: [
+      { idKey: 'Karyawan Swasta', jpVal: '会社員' },
+      { idKey: 'Wiraswasta', jpVal: '自営業' },
+      { idKey: 'Pedagang', jpVal: '商人' },
+      { idKey: 'Buruh Harian Lepas', jpVal: 'アルバイト' },
+      { idKey: 'Wartawan', jpVal: '記者' },
+    ],
+  },
+  {
+    categoryName: '3. Tenaga Pengajar & Pemuka Agama',
+    items: [
+      { idKey: 'Guru', jpVal: '教師' },
+      { idKey: 'Ustadz / Mubaligh', jpVal: '牧師' },
+    ],
+  },
+  {
+    categoryName: '4. Pegawai Pemerintahan, Militer & Desa',
+    items: [
+      { idKey: 'Pegawai Negeri Sipil', jpVal: '公務員' },
+      { idKey: 'TNI', jpVal: '軍人' },
+      { idKey: 'Perangkat Desa', jpVal: '役人' },
+      { idKey: 'Kepala Desa', jpVal: '村長' },
+    ],
+  },
+  {
+    categoryName: '5. Sektor Pertanian & Peternakan',
+    items: [
+      { idKey: 'Petani / Pekebun', jpVal: '農家' },
+      { idKey: 'Buruh Tani / Perkebunan', jpVal: '農民' },
+      { idKey: 'Peternak', jpVal: '畜産' },
+    ],
+  },
+  {
+    categoryName: '6. Keterampilan Teknik & Jasa Pelayanan',
+    items: [
+      { idKey: 'Sopir', jpVal: '運転手' },
+      { idKey: 'Tukang Cukur', jpVal: '理容師' },
+      { idKey: 'Tukang Listrik', jpVal: '電気技師' },
+      { idKey: 'Tukang Kayu', jpVal: '大工' },
+      { idKey: 'Tukang Batu', jpVal: '石工' },
+      { idKey: 'Pembantu Rumah Tangga', jpVal: '家事手伝い' },
+    ],
+  },
+];
+
 export const EMPTY_TRANSLATION_DATA: TranslationResult = {
   familyCardNumber: '',
   headOfFamily: '',

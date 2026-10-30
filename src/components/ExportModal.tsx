@@ -7,18 +7,21 @@ import {
   AlertCircle,
   CheckCircle,
   FileCheck,
+  Cloud,
 } from 'lucide-react';
 
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: TranslationResult;
+  onOpenGoogleDrive?: () => void;
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   onClose,
   data,
+  onOpenGoogleDrive,
 }) => {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [exportProgress, setExportProgress] = useState<{ percent: number; text: string } | null>(null);
@@ -119,6 +122,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               <Download size={16} />
               <span>{isExportingPdf ? 'Sedang Membuat Dokumen PDF...' : 'Download Dokumen PDF Sekarang'}</span>
             </button>
+
+            {onOpenGoogleDrive && (
+              <button
+                type="button"
+                onClick={onOpenGoogleDrive}
+                className="w-full py-2.5 px-4 font-semibold rounded-lg text-xs sm:text-sm flex items-center justify-center gap-2 bg-white hover:bg-sky-50 border border-sky-300 text-sky-800 transition-colors shadow-2xs"
+              >
+                <Cloud size={16} className="text-sky-600" />
+                <span>Simpan Langsung ke Google Drive</span>
+              </button>
+            )}
           </div>
 
           {/* Progress bar */}

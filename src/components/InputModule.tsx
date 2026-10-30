@@ -6,6 +6,12 @@ import {
   VOCABULARY,
   SAMPLE_PRESETS,
   EMPTY_TRANSLATION_DATA,
+  GENDER_OPTIONS,
+  RELIGION_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
+  EDUCATION_OPTIONS,
+  RELATION_STATUS_OPTIONS,
+  OCCUPATION_CATEGORIES,
 } from '../types';
 import { transliterateIndonesianToKatakana } from '../utils/katakanaHelper';
 import {
@@ -27,6 +33,9 @@ import {
   ShieldCheck,
   RotateCcw,
   FileUp,
+  Layers,
+  Check,
+  Sparkles,
 } from 'lucide-react';
 
 interface InputModuleProps {
@@ -35,7 +44,6 @@ interface InputModuleProps {
   onUpdateData: (newData: TranslationResult) => void;
   onUpdateTranslator: (newTranslator: TranslatorInfo) => void;
   onJumpToPreview: () => void;
-  onOpenGuideModal?: () => void;
 }
 
 export const InputModule: React.FC<InputModuleProps> = ({
@@ -44,11 +52,30 @@ export const InputModule: React.FC<InputModuleProps> = ({
   onUpdateData,
   onUpdateTranslator,
   onJumpToPreview,
-  onOpenGuideModal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'form' | 'presets' | 'translator'>('form');
+  const [activeTab, setActiveTab] = useState<'form' | 'presets' | 'translator' | 'vocabulary'>('form');
   const [expandedMemberIndex, setExpandedMemberIndex] = useState<number | null>(0);
   const [translatingKatakanaIdx, setTranslatingKatakanaIdx] = useState<number | null>(null);
+
+  // Custom text mode toggles per member field: `${index}-education` or `${index}-occupation`
+  const [customMode, setCustomMode] = useState<Record<string, boolean>>({});
+  const toggleCustomMode = (fieldKey: string) => {
+    setCustomMode((prev) => ({ ...prev, [fieldKey]: !prev[fieldKey] }));
+  };
+
+  // State for interactive vocabulary catalog quick-apply
+  const [vocabTargetIdx, setVocabTargetIdx] = useState<number>(0);
+  const [appliedFeedback, setAppliedFeedback] = useState<string | null>(null);
+
+  const applyVocabToTarget = (field: keyof FamilyMember, val: string, label: string) => {
+    if (data.members[vocabTargetIdx]) {
+      const updated = [...data.members];
+      updated[vocabTargetIdx] = { ...updated[vocabTargetIdx], [field]: val };
+      onUpdateData({ ...data, members: updated });
+      setAppliedFeedback(`Berhasil memilih: ${val} (${label}) untuk Anggota ${vocabTargetIdx + 1}`);
+      setTimeout(() => setAppliedFeedback(null), 2500);
+    }
+  };
 
   // In-Memory stateless scanning states (never written to disk or storage)
   const [uploadFile, setUploadFile] = useState<{ name: string; base64: string; mimeType: string } | null>(null);
@@ -237,17 +264,21 @@ export const InputModule: React.FC<InputModuleProps> = ({
           <span>Sertifikasi Penerjemah</span>
         </button>
 
-        {onOpenGuideModal && (
-          <button
-            type="button"
-            onClick={onOpenGuideModal}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 my-1 mr-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold whitespace-nowrap transition-colors ml-auto border border-blue-200"
-            title="Buka Menu Bantuan & Kosakata Resmi"
-          >
-            <BookOpen size={14} className="text-blue-600" />
-            <span>Menu Bantuan</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setActiveTab('vocabulary')}
+          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap transition-colors ${
+            activeTab === 'vocabulary'
+              ? 'border-blue-600 text-blue-600 bg-white'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <Layers size={16} />
+          <span className="flex items-center gap-1">
+            <span>Daftar Pilihan Kosakata</span>
+            <span className="px-1.5 py-0.2 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold">6 Kategori</span>
+          </span>
+        </button>
       </div>
 
       {/* Tab Body */}
@@ -255,29 +286,6 @@ export const InputModule: React.FC<InputModuleProps> = ({
         {/* ================= TAB 1: MANUAL FORM & CORRECTION ================= */}
         {activeTab === 'form' && (
           <div className="space-y-6">
-            {/* Quick Bantuan Banner */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2">
-                <BookOpen size={16} className="text-blue-600 shrink-0" />
-                <div className="text-xs text-blue-900">
-                  <span className="font-bold">Perlu padanan kosakata atau file acuan?</span>{' '}
-                  <span className="text-blue-800 hidden sm:inline">
-                    Buka Menu Bantuan untuk melihat kamus kanji & file referensi asli.
-                  </span>
-                </div>
-              </div>
-              {onOpenGuideModal && (
-                <button
-                  type="button"
-                  onClick={onOpenGuideModal}
-                  className="shrink-0 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
-                >
-                  <span>Buka Menu Bantuan</span>
-                  <ArrowRight size={13} />
-                </button>
-              )}
-            </div>
-
             {/* Section A: Header & Identitas Dokumen */}
             <div className="space-y-3">
               <div className="flex items-center justify-between border-b pb-1">
@@ -638,30 +646,32 @@ export const InputModule: React.FC<InputModuleProps> = ({
 
                             <div>
                               <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Jenis Kelamin (性別)
+                                Jenis Kelamin (性別) - Pilih Langsung:
                               </label>
                               <div className="flex gap-2">
                                 <button
                                   type="button"
                                   onClick={() => updateMember(index, 'gender', '男')}
-                                  className={`flex-1 py-1.5 rounded text-xs font-bold border transition-colors ${
-                                    member.gender === '男'
-                                      ? 'bg-blue-600 text-white border-blue-600'
-                                      : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                                  className={`flex-1 py-1.5 px-2 rounded text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                                    member.gender === '男' || member.gender === '男性'
+                                      ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                                      : 'bg-white text-slate-700 border-slate-300 hover:bg-blue-50'
                                   }`}
                                 >
-                                  男 (Laki-laki)
+                                  <span>男</span>
+                                  <span className="text-[10px] font-normal opacity-90">(男性 - Laki)</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => updateMember(index, 'gender', '女')}
-                                  className={`flex-1 py-1.5 rounded text-xs font-bold border transition-colors ${
-                                    member.gender === '女'
-                                      ? 'bg-rose-600 text-white border-rose-600'
-                                      : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                                  className={`flex-1 py-1.5 px-2 rounded text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                                    member.gender === '女' || member.gender === '女性'
+                                      ? 'bg-rose-600 text-white border-rose-600 shadow-2xs'
+                                      : 'bg-white text-slate-700 border-slate-300 hover:bg-rose-50'
                                   }`}
                                 >
-                                  女 (Perempuan)
+                                  <span>女</span>
+                                  <span className="text-[10px] font-normal opacity-90">(女性 - Perempuan)</span>
                                 </button>
                               </div>
                             </div>
@@ -696,89 +706,161 @@ export const InputModule: React.FC<InputModuleProps> = ({
                             </div>
                           </div>
 
-                          {/* Hubungan Keluarga & Status Perkawinan */}
+                          {/* Hubungan Keluarga & Status Perkawinan (Dropdown Pilihan Cepat) */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div>
                               <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Status Hubungan Keluarga (続柄)
+                                Status Hubungan Keluarga (続柄) - Pilih:
                               </label>
                               <select
                                 value={member.relationStatus}
                                 onChange={(e) => updateMember(index, 'relationStatus', e.target.value)}
-                                className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white"
+                                className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
                               >
-                                {Object.entries(VOCABULARY.relationStatus).map(([idKey, jpVal]) => (
-                                  <option key={idKey} value={jpVal}>
-                                    {jpVal} ({idKey})
+                                <option value="">-- Pilih Hubungan Keluarga --</option>
+                                {RELATION_STATUS_OPTIONS.map((item) => (
+                                  <option key={item.idKey} value={item.jpVal}>
+                                    {item.jpVal} — {item.idKey}
                                   </option>
                                 ))}
-                                {!Object.values(VOCABULARY.relationStatus).includes(member.relationStatus) && (
-                                  <option value={member.relationStatus}>{member.relationStatus}</option>
+                                {!RELATION_STATUS_OPTIONS.some((i) => i.jpVal === member.relationStatus) && member.relationStatus && (
+                                  <option value={member.relationStatus}>{member.relationStatus} (Kustom)</option>
                                 )}
                               </select>
                             </div>
 
                             <div>
                               <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Status Perkawinan (婚姻状況)
+                                Status Perkawinan (婚姻状況) - Pilih:
                               </label>
                               <select
                                 value={member.maritalStatus}
                                 onChange={(e) => updateMember(index, 'maritalStatus', e.target.value)}
-                                className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white"
+                                className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
                               >
-                                {Object.entries(VOCABULARY.maritalStatus).map(([idKey, jpVal]) => (
-                                  <option key={idKey} value={jpVal}>
-                                    {jpVal} ({idKey})
+                                <option value="">-- Pilih Status Perkawinan --</option>
+                                {MARITAL_STATUS_OPTIONS.map((item) => (
+                                  <option key={item.idKey} value={item.jpVal}>
+                                    {item.jpVal} — {item.idKey}
                                   </option>
                                 ))}
+                                {!MARITAL_STATUS_OPTIONS.some((i) => i.jpVal === member.maritalStatus) && member.maritalStatus && (
+                                  <option value={member.maritalStatus}>{member.maritalStatus} (Kustom)</option>
+                                )}
                               </select>
                             </div>
                           </div>
 
-                          {/* Agama, Pendidikan, Pekerjaan */}
+                          {/* Agama, Pendidikan, Pekerjaan (Pilihan Dropdown Terkategori) */}
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            {/* Agama */}
                             <div>
                               <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Agama (宗教)
+                                Agama (宗教) - Pilih:
                               </label>
                               <select
                                 value={member.religion}
                                 onChange={(e) => updateMember(index, 'religion', e.target.value)}
-                                className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white"
+                                className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
                               >
-                                {Object.entries(VOCABULARY.religion).map(([idKey, jpVal]) => (
-                                  <option key={idKey} value={jpVal}>
-                                    {jpVal} ({idKey})
+                                <option value="">-- Pilih Agama --</option>
+                                {RELIGION_OPTIONS.map((item) => (
+                                  <option key={item.idKey} value={item.jpVal}>
+                                    {item.jpVal} — {item.idKey}
                                   </option>
                                 ))}
+                                {!RELIGION_OPTIONS.some((i) => i.jpVal === member.religion) && member.religion && (
+                                  <option value={member.religion}>{member.religion} (Kustom)</option>
+                                )}
                               </select>
                             </div>
 
+                            {/* Pendidikan Terakhir */}
                             <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Pendidikan (最終学歴)
-                              </label>
-                              <input
-                                type="text"
-                                value={member.education}
-                                onChange={(e) => updateMember(index, 'education', e.target.value)}
-                                className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                                placeholder="学士号取得（大学卒業/S1）"
-                              />
+                              <div className="flex items-center justify-between mb-0.5">
+                                <label className="block text-[11px] font-semibold text-slate-700">
+                                  Pendidikan (学歴) - Pilih:
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleCustomMode(`${index}-education`)}
+                                  className="text-[10px] text-blue-600 hover:text-blue-800 underline transition-colors"
+                                  title="Beralih ke mode input manual atau pilihan"
+                                >
+                                  {customMode[`${index}-education`] ? 'Pilih Daftar' : 'Ketik Manual'}
+                                </button>
+                              </div>
+                              {customMode[`${index}-education`] ? (
+                                <input
+                                  type="text"
+                                  value={member.education}
+                                  onChange={(e) => updateMember(index, 'education', e.target.value)}
+                                  className="w-full text-xs px-2 py-1.5 border border-blue-400 bg-blue-50/20 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                  placeholder="Ketik kustom jenjang pendidikan..."
+                                />
+                              ) : (
+                                <select
+                                  value={member.education}
+                                  onChange={(e) => updateMember(index, 'education', e.target.value)}
+                                  className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
+                                >
+                                  <option value="">-- Pilih Pendidikan (10 Jenjang) --</option>
+                                  {EDUCATION_OPTIONS.map((item) => (
+                                    <option key={item.idKey} value={item.jpVal}>
+                                      {item.jpVal} — {item.idKey}
+                                    </option>
+                                  ))}
+                                  {!EDUCATION_OPTIONS.some((i) => i.jpVal === member.education) && member.education && (
+                                    <option value={member.education}>{member.education} (Kustom)</option>
+                                  )}
+                                </select>
+                              )}
                             </div>
 
+                            {/* Jenis Pekerjaan */}
                             <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Pekerjaan (職業)
-                              </label>
-                              <input
-                                type="text"
-                                value={member.occupation}
-                                onChange={(e) => updateMember(index, 'occupation', e.target.value)}
-                                className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                                placeholder="会社員（民間企業）"
-                              />
+                              <div className="flex items-center justify-between mb-0.5">
+                                <label className="block text-[11px] font-semibold text-slate-700">
+                                  Pekerjaan (職業) - Pilih:
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleCustomMode(`${index}-occupation`)}
+                                  className="text-[10px] text-blue-600 hover:text-blue-800 underline transition-colors"
+                                  title="Beralih ke mode input manual atau pilihan"
+                                >
+                                  {customMode[`${index}-occupation`] ? 'Pilih Daftar' : 'Ketik Manual'}
+                                </button>
+                              </div>
+                              {customMode[`${index}-occupation`] ? (
+                                <input
+                                  type="text"
+                                  value={member.occupation}
+                                  onChange={(e) => updateMember(index, 'occupation', e.target.value)}
+                                  className="w-full text-xs px-2 py-1.5 border border-blue-400 bg-blue-50/20 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                  placeholder="Ketik kustom nama pekerjaan..."
+                                />
+                              ) : (
+                                <select
+                                  value={member.occupation}
+                                  onChange={(e) => updateMember(index, 'occupation', e.target.value)}
+                                  className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
+                                >
+                                  <option value="">-- Pilih Pekerjaan (24 Pilihan Resmi) --</option>
+                                  {OCCUPATION_CATEGORIES.map((cat) => (
+                                    <optgroup key={cat.categoryName} label={cat.categoryName}>
+                                      {cat.items.map((item) => (
+                                        <option key={item.idKey} value={item.jpVal}>
+                                          {item.jpVal} — {item.idKey}
+                                        </option>
+                                      ))}
+                                    </optgroup>
+                                  ))}
+                                  {!OCCUPATION_CATEGORIES.some((g) => g.items.some((i) => i.jpVal === member.occupation)) && member.occupation && (
+                                    <option value={member.occupation}>{member.occupation} (Kustom)</option>
+                                  )}
+                                </select>
+                              )}
                             </div>
                           </div>
 
@@ -1006,6 +1088,255 @@ export const InputModule: React.FC<InputModuleProps> = ({
                 />
                 <span>Sertakan Stempel Hanko Resmi (印鑑 / 翻訳者之印)</span>
               </label>
+            </div>
+          </div>
+        )}
+
+        {/* ================= TAB 4: KATALOG KOSAKATA LENGKAP & PEMILIH CEPAT ================= */}
+        {activeTab === 'vocabulary' && (
+          <div className="space-y-6">
+            {/* Top Toolbar for Applying to Selected Member */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 sm:p-4 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                    <Layers size={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                      Katalog Kosakata Resmi Terjemahan Jepang (戸籍謄本)
+                    </h4>
+                    <p className="text-[11px] text-slate-600">
+                      Klik pada kartu kosakata mana pun untuk langsung menerapkannya ke anggota keluarga tanpa mengetik manual.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Target member selector */}
+                <div className="flex items-center gap-2 shrink-0 bg-white px-2.5 py-1.5 rounded-lg border border-blue-200">
+                  <span className="text-[11px] font-semibold text-slate-700 whitespace-nowrap">
+                    Terapkan Ke:
+                  </span>
+                  <select
+                    value={vocabTargetIdx}
+                    onChange={(e) => setVocabTargetIdx(parseInt(e.target.value, 10))}
+                    className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200 focus:outline-none"
+                  >
+                    {data.members.map((m, idx) => (
+                      <option key={`target-member-${idx}`} value={idx}>
+                        No. {idx + 1}: {m.fullNameOriginal || `Anggota ${idx + 1}`} ({m.relationStatus || 'Hubungan'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Feedback Alert Banner */}
+              {appliedFeedback && (
+                <div className="mt-3 bg-emerald-100 border border-emerald-300 text-emerald-900 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 animate-fadeIn">
+                  <Check size={14} className="text-emerald-700" />
+                  <span>{appliedFeedback}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Kategori 1: Jenis Kelamin */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span>1. Jenis Kelamin (性別) - 2 Pilihan</span>
+                </h5>
+                <span className="text-[10px] text-slate-500">Klik untuk menerapkan ke Anggota {vocabTargetIdx + 1}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {GENDER_OPTIONS.map((item) => (
+                  <button
+                    key={item.idKey}
+                    type="button"
+                    onClick={() => applyVocabToTarget('gender', item.jpVal, item.idKey)}
+                    className="p-2.5 bg-white hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 rounded-lg text-left transition-all group flex items-center justify-between shadow-2xs"
+                  >
+                    <div>
+                      <span className="text-[10px] font-medium text-slate-500 uppercase">{item.idKey}</span>
+                      <p className="text-sm font-bold text-slate-900 font-gothic group-hover:text-blue-600">
+                        {item.fullJp} ({item.jpVal})
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      Pilih
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Kategori 2: Agama */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>2. Agama (宗教) - 5 Pilihan</span>
+                </h5>
+                <span className="text-[10px] text-slate-500">Klik untuk menerapkan</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                {RELIGION_OPTIONS.map((item) => (
+                  <button
+                    key={item.idKey}
+                    type="button"
+                    onClick={() => applyVocabToTarget('religion', item.jpVal, item.idKey)}
+                    className="p-2.5 bg-white hover:bg-emerald-50/60 border border-slate-200 hover:border-emerald-300 rounded-lg text-left transition-all group shadow-2xs"
+                  >
+                    <span className="text-[10px] font-medium text-slate-500">{item.idKey}</span>
+                    <p className="text-xs font-bold text-slate-900 font-gothic group-hover:text-emerald-700 mt-0.5">
+                      {item.jpVal}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Kategori 3: Status Perkawinan */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-purple-500" />
+                  <span>3. Status Perkawinan (婚姻状況) - 4 Pilihan</span>
+                </h5>
+                <span className="text-[10px] text-slate-500">Klik untuk menerapkan</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {MARITAL_STATUS_OPTIONS.map((item) => (
+                  <button
+                    key={item.idKey}
+                    type="button"
+                    onClick={() => applyVocabToTarget('maritalStatus', item.jpVal, item.idKey)}
+                    className="p-2.5 bg-white hover:bg-purple-50/60 border border-slate-200 hover:border-purple-300 rounded-lg text-left transition-all group shadow-2xs"
+                  >
+                    <span className="text-[10px] font-medium text-slate-500">{item.idKey}</span>
+                    <p className="text-xs font-bold text-slate-900 font-gothic group-hover:text-purple-700 mt-0.5">
+                      {item.jpVal}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Kategori 4: Pendidikan Terakhir */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span>4. Pendidikan Terakhir (最終学歴) - 10 Jenjang</span>
+                </h5>
+                <span className="text-[10px] text-slate-500">Klik untuk menerapkan</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {EDUCATION_OPTIONS.map((item) => (
+                  <button
+                    key={item.idKey}
+                    type="button"
+                    onClick={() => applyVocabToTarget('education', item.jpVal, item.idKey)}
+                    className="p-2.5 bg-white hover:bg-amber-50/60 border border-slate-200 hover:border-amber-300 rounded-lg text-left transition-all group flex items-center justify-between shadow-2xs"
+                  >
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">{item.idKey}</span>
+                      <p className="text-xs font-bold text-slate-900 font-gothic group-hover:text-amber-800">
+                        {item.jpVal}
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-slate-400 group-hover:text-amber-700 font-semibold">
+                      Terapkan &rarr;
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Kategori 5: Status Hubungan Dalam Keluarga */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-sky-500" />
+                  <span>5. Status Hubungan Dalam Keluarga (続柄 / 家族関係) - 11 Pilihan</span>
+                </h5>
+                <span className="text-[10px] text-slate-500">Klik untuk menerapkan</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {RELATION_STATUS_OPTIONS.map((item) => (
+                  <button
+                    key={item.idKey}
+                    type="button"
+                    onClick={() => applyVocabToTarget('relationStatus', item.jpVal, item.idKey)}
+                    className="p-2.5 bg-white hover:bg-sky-50/60 border border-slate-200 hover:border-sky-300 rounded-lg text-left transition-all group flex items-center justify-between shadow-2xs"
+                  >
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">{item.idKey}</span>
+                      <p className="text-xs font-bold text-slate-900 font-gothic group-hover:text-sky-700">
+                        {item.jpVal}
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-slate-400 group-hover:text-sky-700 font-semibold">
+                      &rarr;
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Kategori 6: Jenis Pekerjaan (24 Kosakata Terbagi 6 Sektor) */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                  <span>6. Jenis Pekerjaan (職業) - 24 Kosakata Terbagi 6 Sektor</span>
+                </h5>
+                <span className="text-[10px] text-slate-500">Klik untuk menerapkan</span>
+              </div>
+
+              <div className="space-y-3">
+                {OCCUPATION_CATEGORIES.map((cat) => (
+                  <div key={cat.categoryName} className="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+                    <h6 className="text-[11px] font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                      <span>{cat.categoryName} ({cat.items.length})</span>
+                    </h6>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {cat.items.map((item) => (
+                        <button
+                          key={item.idKey}
+                          type="button"
+                          onClick={() => applyVocabToTarget('occupation', item.jpVal, item.idKey)}
+                          className="p-2 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded text-left transition-all group flex items-center justify-between shadow-2xs"
+                        >
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">{item.idKey}</span>
+                            <p className="text-xs font-bold text-slate-900 font-gothic group-hover:text-indigo-700">
+                              {item.jpVal}
+                            </p>
+                          </div>
+                          <span className="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                            Pilih
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom action button */}
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setActiveTab('form')}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+              >
+                <span>Kembali ke Formulir Pengisian</span>
+                <ArrowRight size={14} />
+              </button>
             </div>
           </div>
         )}

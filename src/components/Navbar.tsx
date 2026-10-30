@@ -1,31 +1,31 @@
 import React from 'react';
 import {
   Download,
-  BookOpen,
   Eye,
   SlidersHorizontal,
   Columns,
   CheckCircle2,
   ShieldCheck,
   RotateCcw,
+  Cloud,
 } from 'lucide-react';
 
 interface NavbarProps {
   viewMode: 'split' | 'preview' | 'editor';
   onViewModeChange: (mode: 'split' | 'preview' | 'editor') => void;
   onDownloadPdf: () => void;
-  onOpenGuideModal: () => void;
   onOpenPrivacyModal: () => void;
   onResetData: () => void;
+  onOpenGoogleDriveModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   viewMode,
   onViewModeChange,
   onDownloadPdf,
-  onOpenGuideModal,
   onOpenPrivacyModal,
   onResetData,
+  onOpenGoogleDriveModal,
 }) => {
   return (
     <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
@@ -104,15 +104,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="hidden sm:inline">Zero-Data</span>
           </button>
 
-          {/* Guide Modal Trigger (Menu Bantuan) */}
+          {/* Google Drive Trigger */}
           <button
             type="button"
-            onClick={onOpenGuideModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors shadow-2xs"
-            title="Buka Menu Bantuan & Daftar Kosakata Terjemahan"
+            onClick={onOpenGoogleDriveModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors shadow-2xs"
+            title="Kelola & Simpan Dokumen ke Google Drive"
           >
-            <BookOpen size={14} className="text-blue-600" />
-            <span className="inline">Bantuan</span>
+            <Cloud size={14} className="text-sky-600" />
+            <span className="hidden sm:inline">Google Drive</span>
           </button>
 
           {/* Reset All Data Button */}

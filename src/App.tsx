@@ -4,8 +4,8 @@ import { Navbar } from './components/Navbar';
 import { InputModule } from './components/InputModule';
 import { PreviewSheet } from './components/PreviewSheet';
 import { ExportModal } from './components/ExportModal';
-import { GuideModal } from './components/GuideModal';
 import { PrivacyModal } from './components/PrivacyModal';
+import { GoogleDriveModal } from './components/GoogleDriveModal';
 import { Download, CheckCircle2, ShieldCheck, AlertTriangle } from 'lucide-react';
 
 export default function App() {
@@ -25,8 +25,8 @@ export default function App() {
 
   const [viewMode, setViewMode] = useState<'split' | 'preview' | 'editor'>('split');
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
-  const [isGuideModalOpen, setIsGuideModalOpen] = useState<boolean>(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
+  const [isGoogleDriveModalOpen, setIsGoogleDriveModalOpen] = useState<boolean>(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState<boolean>(false);
 
   // Hook lifecycle useEffect for beforeunload confirmation (Zero Data Retention)
@@ -63,9 +63,9 @@ export default function App() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onDownloadPdf={() => setIsExportModalOpen(true)}
-        onOpenGuideModal={() => setIsGuideModalOpen(true)}
         onOpenPrivacyModal={() => setIsPrivacyModalOpen(true)}
         onResetData={() => setIsResetConfirmOpen(true)}
+        onOpenGoogleDriveModal={() => setIsGoogleDriveModalOpen(true)}
       />
 
       {/* Main Workspace */}
@@ -142,7 +142,6 @@ export default function App() {
                 onUpdateData={setData}
                 onUpdateTranslator={setTranslator}
                 onJumpToPreview={() => setViewMode('preview')}
-                onOpenGuideModal={() => setIsGuideModalOpen(true)}
               />
             </div>
           )}
@@ -214,17 +213,23 @@ export default function App() {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         data={data}
-      />
-
-      <GuideModal
-        isOpen={isGuideModalOpen}
-        onClose={() => setIsGuideModalOpen(false)}
+        onOpenGoogleDrive={() => {
+          setIsExportModalOpen(false);
+          setIsGoogleDriveModalOpen(true);
+        }}
       />
 
       <PrivacyModal
         isOpen={isPrivacyModalOpen}
         onClose={() => setIsPrivacyModalOpen(false)}
         onClearAllData={handleClearAllData}
+      />
+
+      <GoogleDriveModal
+        isOpen={isGoogleDriveModalOpen}
+        onClose={() => setIsGoogleDriveModalOpen(false)}
+        currentData={data}
+        onLoadDataFromDrive={(importedData) => setData(importedData)}
       />
 
       {/* Confirmation Modal for Resetting / Clearing RAM */}
