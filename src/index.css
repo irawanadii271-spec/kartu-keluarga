@@ -36,7 +36,7 @@
   color: #000000;
   line-height: 1.35;
   box-sizing: border-box;
-  font-family: "MS PGothic", "MS Gothic", "Yu Gothic", "YuGothic", "Meiryo", "BIZ UDPGothic", sans-serif;
+  font-family: "Yu Gothic", "Meiryo", "MS Gothic", "MS PGothic", "Noto Sans JP", "BIZ UDPGothic", sans-serif;
   overflow: visible;
 }
 
@@ -58,47 +58,82 @@
 }
 
 .kk-table tr {
-  height: 25px !important;
+  height: 26px !important;
+  min-height: 26px !important;
   overflow: visible !important;
 }
 
 .kk-table th,
 .kk-table td {
   border: 1px solid #000000 !important;
-  padding: 0 3px !important;
+  padding: 0 !important;
   text-align: center;
   vertical-align: middle !important;
   word-break: break-word;
   color: #000000 !important;
   background-color: transparent;
   overflow: visible !important;
-  height: 25px !important;
-  line-height: normal !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  box-sizing: border-box !important;
 }
 
-.kk-table td > div {
-  height: 25px !important;
-  min-height: 25px !important;
+.kk-table td {
+  font-weight: 400 !important;
+  font-size: 8.2pt !important;
+}
+
+.kk-table td > div,
+.kk-table th > div {
+  height: 100% !important;
+  min-height: 26px !important;
   display: flex !important;
   align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+.kk-table td span,
+.kk-table th span {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  line-height: 1.2 !important;
 }
 
 .kk-table th {
   background-color: #f0f0f0 !important;
-  font-weight: bold;
-  font-size: 8.5pt;
+  font-weight: 700 !important;
+  font-size: 8.5pt !important;
   color: #000000 !important;
-  padding: 2px 2px !important;
+  padding: 0 !important;
   vertical-align: middle !important;
   overflow: visible !important;
+  height: 26px !important;
+  min-height: 26px !important;
+}
+
+.header-indices-row,
+.header-indices-row tr {
+  height: 18px !important;
+  min-height: 18px !important;
 }
 
 .header-indices-row th {
   background-color: #f5f5f5 !important;
-  font-weight: normal !important;
+  font-weight: 400 !important;
   font-size: 7.5pt !important;
-  padding: 1px 2px !important;
+  padding: 0 !important;
   color: #000000 !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  vertical-align: middle !important;
+}
+
+.header-indices-row th > div {
+  height: 100% !important;
+  min-height: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .text-left {

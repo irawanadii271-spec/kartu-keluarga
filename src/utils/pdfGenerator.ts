@@ -96,6 +96,33 @@ function patchCSSStyleDeclaration(proto: any): () => void {
 }
 
 /**
+ * Hooks CanvasRenderingContext2D.prototype.fillText and strokeText.
+ * In html2canvas, FontMetrics hardcodes "+2px" to baseline and calculation bias
+ * pushes text downward into the bottom border line of table cells.
+ * Offsetting y upward by 3.5px counteracts this html2canvas quirk, positioning text
+ * in the true optical vertical center of each table cell.
+ */
+function patchCanvasFillText(win: Window): () => void {
+  const proto = (win as any).CanvasRenderingContext2D?.prototype;
+  if (!proto) return () => {};
+  const origFillText = proto.fillText;
+  const origStrokeText = proto.strokeText;
+
+  proto.fillText = function (text: string, x: number, y: number, maxWidth?: number) {
+    return origFillText.call(this, text, x, y - 3.5, maxWidth);
+  };
+
+  proto.strokeText = function (text: string, x: number, y: number, maxWidth?: number) {
+    return origStrokeText.call(this, text, x, y - 3.5, maxWidth);
+  };
+
+  return () => {
+    proto.fillText = origFillText;
+    proto.strokeText = origStrokeText;
+  };
+}
+
+/**
  * Core engine to render an HTML element to a jsPDF Blob.
  * 
  * SOLVES:
@@ -119,6 +146,8 @@ export async function generatePdfBlobFromElement(
 
   // Hook CSSStyleDeclaration on current window
   const restoreMainCSS = patchCSSStyleDeclaration(CSSStyleDeclaration.prototype);
+  // Hook CanvasRenderingContext2D fillText on current window to lift baseline
+  const restoreCanvasFillText = patchCanvasFillText(window);
 
   // Create an isolated offscreen host attached directly to document.body
   const exportHost = document.createElement('div');
@@ -183,9 +212,12 @@ export async function generatePdfBlobFromElement(
         return el.classList.contains('no-print') || el.tagName.toLowerCase() === 'svg';
       },
       onclone: (clonedDoc, clonedEl) => {
-        // Also patch CSSStyleDeclaration inside the iframe
-        if (clonedDoc.defaultView && (clonedDoc.defaultView as any).CSSStyleDeclaration) {
-          patchCSSStyleDeclaration((clonedDoc.defaultView as any).CSSStyleDeclaration.prototype);
+        // Also patch CSSStyleDeclaration & Canvas fillText inside the iframe
+        if (clonedDoc.defaultView) {
+          if ((clonedDoc.defaultView as any).CSSStyleDeclaration) {
+            patchCSSStyleDeclaration((clonedDoc.defaultView as any).CSSStyleDeclaration.prototype);
+          }
+          patchCanvasFillText(clonedDoc.defaultView as Window);
         }
 
         // Clean any SVG or no-print elements in the cloned document
@@ -228,7 +260,7 @@ export async function generatePdfBlobFromElement(
             background-color: #ffffff !important;
             color: #000000 !important;
             border: 2px solid #000000 !important;
-            font-family: "MS PGothic", "MS Gothic", "Yu Gothic", "YuGothic", "Meiryo", "BIZ UDPGothic", sans-serif !important;
+            font-family: "Yu Gothic", "Meiryo", "MS Gothic", "MS PGothic", "Noto Sans JP", "BIZ UDPGothic", sans-serif !important;
             display: block !important;
             position: static !important;
             width: 1040px !important;
@@ -249,37 +281,65 @@ export async function generatePdfBlobFromElement(
             overflow: visible !important;
           }
           .kk-table tr {
-            height: 25px !important;
+            height: 26px !important;
+            min-height: 26px !important;
             overflow: visible !important;
           }
           .kk-table th, .kk-table td {
             border: 1px solid #000000 !important;
-            padding: 0 3px !important;
+            padding: 0 !important;
             text-align: center !important;
             vertical-align: middle !important;
             color: #000000 !important;
             overflow: visible !important;
-            height: 25px !important;
-            line-height: normal !important;
+            height: 26px !important;
+            min-height: 26px !important;
+            box-sizing: border-box !important;
           }
-          .kk-table td > div {
-            height: 25px !important;
-            min-height: 25px !important;
+          .kk-table td {
+            font-weight: 400 !important;
+            font-size: 8.2pt !important;
+          }
+          .kk-table td > div, .kk-table th > div {
+            height: 100% !important;
+            min-height: 26px !important;
             display: flex !important;
             align-items: center !important;
+            box-sizing: border-box !important;
+          }
+          .kk-table td span, .kk-table th span {
+            display: inline-block !important;
+            vertical-align: middle !important;
+            line-height: 1.2 !important;
           }
           .kk-table th {
             background-color: #f0f0f0 !important;
-            font-weight: bold !important;
-            padding: 2px 2px !important;
+            font-weight: 700 !important;
+            font-size: 8.5pt !important;
+            padding: 0 !important;
             vertical-align: middle !important;
+            height: 26px !important;
+            min-height: 26px !important;
+          }
+          .header-indices-row, .header-indices-row tr {
+            height: 18px !important;
+            min-height: 18px !important;
           }
           .header-indices-row th {
             background-color: #f5f5f5 !important;
-            font-weight: normal !important;
+            font-weight: 400 !important;
             font-size: 7.5pt !important;
-            padding: 1px 2px !important;
+            padding: 0 !important;
             vertical-align: middle !important;
+            height: 18px !important;
+            min-height: 18px !important;
+          }
+          .header-indices-row th > div {
+            height: 100% !important;
+            min-height: 18px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
           span, div {
             overflow: visible !important;
@@ -326,6 +386,7 @@ export async function generatePdfBlobFromElement(
     onProgress?.(95, 'Menyelesaikan dokumen...');
     return pdf.output('blob');
   } finally {
+    restoreCanvasFillText();
     if (document.body.contains(exportHost)) {
       document.body.removeChild(exportHost);
     }
