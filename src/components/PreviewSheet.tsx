@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { TranslationResult, FamilyMember } from '../types';
-import { Check, Edit2 } from 'lucide-react';
 
 interface PreviewSheetProps {
   data: TranslationResult;
@@ -75,7 +74,7 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
     }
   };
 
-  // Helper renderer for inline editable cells
+  // Helper renderer for inline editable cells (No SVGs to guarantee html2canvas compatibility)
   const renderCell = (
     cellKey: string,
     value: string | number | undefined,
@@ -87,10 +86,15 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
 
     if (isEditing) {
       return (
-        <div className="flex items-center gap-0.5 w-full min-w-[30px]">
+        <div className="flex items-center gap-0.5 w-full min-w-[30px] no-print">
           <input
             type="text"
-            className="w-full bg-amber-50 border border-blue-600 rounded px-1 py-0 text-[8pt] font-sans text-black focus:outline-none"
+            className="w-full rounded px-1 py-0 text-[8pt] font-sans focus:outline-none"
+            style={{
+              backgroundColor: '#fffbeb',
+              border: '1px solid #2563eb',
+              color: '#000000',
+            }}
             value={inlineEditValue}
             autoFocus
             onChange={(e) => setInlineEditValue(e.target.value)}
@@ -99,11 +103,12 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
           />
           <button
             type="button"
-            className="text-emerald-700 hover:text-emerald-900 p-0.5"
+            className="px-1 py-0 text-[9pt] font-bold"
+            style={{ color: '#047857' }}
             onClick={() => handleSaveEdit(cellKey)}
             title="Simpan"
           >
-            <Check size={10} />
+            ✓
           </button>
         </div>
       );
@@ -112,14 +117,28 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
     return (
       <div
         onClick={() => handleStartEdit(cellKey, strVal)}
-        className={`group cursor-pointer hover:bg-amber-100/50 transition-colors py-0.5 px-0.5 rounded flex items-center justify-${align === 'left' ? 'start' : align === 'right' ? 'end' : 'center'} w-full text-${align}`}
+        className={`cursor-pointer hover:bg-amber-100/40 w-full h-[25px] flex items-center justify-${align === 'left' ? 'start' : align === 'right' ? 'end' : 'center'} text-${align}`}
+        style={{
+          overflow: 'visible',
+          height: '25px',
+          minHeight: '25px',
+          padding: '0 3px',
+          boxSizing: 'border-box',
+        }}
         title="クリックして直接編集"
       >
-        <span className="truncate max-w-full">{strVal || <span className="text-black font-sans">{placeholder}</span>}</span>
-        <Edit2
-          size={8}
-          className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 shrink-0 no-print"
-        />
+        <span
+          style={{
+            color: '#000000',
+            overflow: 'visible',
+            display: 'inline-flex',
+            alignItems: 'center',
+            lineHeight: 1,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {strVal || <span style={{ color: '#000000', fontFamily: 'sans-serif' }}>{placeholder}</span>}
+        </span>
       </div>
     );
   };
@@ -137,24 +156,29 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
       {/* Exact Official Sheet matching user reference screenshot (Screenshot_2026-10-30_105000_37d43159.png) */}
       <div
         id="kk-preview-sheet"
-        className="document-outer-frame font-gothic text-black mx-auto w-[1040px] max-w-[1040px] p-6 sm:p-8 min-h-[700px] relative bg-white"
+        className="document-outer-frame font-gothic mx-auto w-[1040px] max-w-[1040px] p-5 sm:p-6 min-h-[735px] relative"
         style={{
           boxSizing: 'border-box',
           fontSize: '8.5pt',
           color: '#000000',
+          backgroundColor: '#ffffff',
+          borderColor: '#000000',
+          fontFamily: '"MS PGothic", "MS Gothic", "Yu Gothic", "YuGothic", "Meiryo", "BIZ UDPGothic", sans-serif',
+          overflow: 'visible',
         }}
       >
-        {/* Top Right 'K.' Marker - Exactly positioned as in reference image */}
-        <div className="absolute top-5 right-8 font-serif font-bold text-[11pt] text-black tracking-wide">
-          K.
-        </div>
-
         {/* ================= HEADER: 戸籍謄本 & 番号. ================= */}
-        <div className="text-center pt-1 mb-4">
-          <h1 className="text-[22pt] font-bold font-gothic tracking-[0.25em] text-black leading-none mb-2">
+        <div className="text-center pt-1 mb-4" style={{ color: '#000000' }}>
+          <h1
+            className="text-[22pt] font-bold font-gothic tracking-[0.25em] leading-none mb-2"
+            style={{ color: '#000000' }}
+          >
             戸籍謄本
           </h1>
-          <div className="text-[9.5pt] font-bold text-black flex items-center justify-center gap-2">
+          <div
+            className="text-[9.5pt] font-bold flex items-center justify-center gap-2"
+            style={{ color: '#000000' }}
+          >
             <span className="tracking-widest">番号.</span>
             <span className="font-mono text-[10pt] tracking-wide inline-block min-w-[200px] text-left">
               {renderCell('familyCardNumber', data.familyCardNumber, 'left', '3174052309120005')}
@@ -162,45 +186,48 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
           </div>
         </div>
 
-        {/* ================= METADATA SECTION: 2-COLUMN WITH EXACT ALIGNED LABELS & COLONS ================= */}
-        <div className="grid grid-cols-2 gap-x-12 mb-3.5 text-[8.5pt] leading-tight px-1">
+        {/* ================= METADATA SECTION: 2-COLUMN ================= */}
+        <div
+          className="grid grid-cols-2 gap-x-12 mb-3.5 text-[8.5pt] leading-tight px-1"
+          style={{ color: '#000000' }}
+        >
           {/* Kolom Kiri: 家長名, 住所, 隣組・民組番号, 村 */}
           <div className="space-y-1">
             <div className="flex items-center">
-              <span className="w-28 font-medium text-black shrink-0 tracking-wider">
+              <span className="w-28 font-medium shrink-0 tracking-wider" style={{ color: '#000000' }}>
                 家長名
               </span>
-              <span className="w-4 text-center font-bold">:</span>
+              <span className="w-4 text-center font-bold" style={{ color: '#000000' }}>:</span>
               <div className="flex-1 font-medium text-left pl-1">
                 {renderCell('headOfFamily', headOfFamilyDisplay, 'left')}
               </div>
             </div>
 
             <div className="flex items-center">
-              <span className="w-28 font-medium text-black shrink-0 tracking-wider">
+              <span className="w-28 font-medium shrink-0 tracking-wider" style={{ color: '#000000' }}>
                 住所
               </span>
-              <span className="w-4 text-center font-bold">:</span>
+              <span className="w-4 text-center font-bold" style={{ color: '#000000' }}>:</span>
               <div className="flex-1 text-left pl-1">
                 {renderCell('address.street', toPureJapanese(data.address.street), 'left')}
               </div>
             </div>
 
             <div className="flex items-center">
-              <span className="w-28 font-medium text-black shrink-0 tracking-tight">
+              <span className="w-28 font-medium shrink-0 tracking-tight" style={{ color: '#000000' }}>
                 隣組・民組番号
               </span>
-              <span className="w-4 text-center font-bold">:</span>
+              <span className="w-4 text-center font-bold" style={{ color: '#000000' }}>:</span>
               <div className="flex-1 text-left pl-1 font-mono">
                 {renderCell('address.rtRw', data.address.rtRw, 'left')}
               </div>
             </div>
 
             <div className="flex items-center">
-              <span className="w-28 font-medium text-black shrink-0 tracking-wider">
+              <span className="w-28 font-medium shrink-0 tracking-wider" style={{ color: '#000000' }}>
                 村
               </span>
-              <span className="w-4 text-center font-bold">:</span>
+              <span className="w-4 text-center font-bold" style={{ color: '#000000' }}>:</span>
               <div className="flex-1 text-left pl-1">
                 {renderCell('address.subDistrict', toPureJapanese(data.address.subDistrict), 'left')}
               </div>
@@ -210,40 +237,40 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
           {/* Kolom Kanan: 郡, 市, 郵便番号, 州 */}
           <div className="space-y-1">
             <div className="flex items-center">
-              <span className="w-24 font-medium text-black shrink-0 tracking-wider">
+              <span className="w-24 font-medium shrink-0 tracking-wider" style={{ color: '#000000' }}>
                 郡
               </span>
-              <span className="w-4 text-center font-bold">:</span>
+              <span className="w-4 text-center font-bold" style={{ color: '#000000' }}>:</span>
               <div className="flex-1 text-left pl-1">
                 {renderCell('address.district', toPureJapanese(data.address.district), 'left')}
               </div>
             </div>
 
             <div className="flex items-center">
-              <span className="w-24 font-medium text-black shrink-0 tracking-wider">
+              <span className="w-24 font-medium shrink-0 tracking-wider" style={{ color: '#000000' }}>
                 市
               </span>
-              <span className="w-4 text-center font-bold">:</span>
+              <span className="w-4 text-center font-bold" style={{ color: '#000000' }}>:</span>
               <div className="flex-1 text-left pl-1">
                 {renderCell('address.regencyCity', toPureJapanese(data.address.regencyCity), 'left')}
               </div>
             </div>
 
             <div className="flex items-center">
-              <span className="w-24 font-medium text-black shrink-0 tracking-wider">
+              <span className="w-24 font-medium shrink-0 tracking-wider" style={{ color: '#000000' }}>
                 郵便番号
               </span>
-              <span className="w-4 text-center font-bold">:</span>
+              <span className="w-4 text-center font-bold" style={{ color: '#000000' }}>:</span>
               <div className="flex-1 text-left pl-1 font-mono">
                 {renderCell('address.postalCode', data.address.postalCode, 'left')}
               </div>
             </div>
 
             <div className="flex items-center">
-              <span className="w-24 font-medium text-black shrink-0 tracking-wider">
+              <span className="w-24 font-medium shrink-0 tracking-wider" style={{ color: '#000000' }}>
                 州
               </span>
-              <span className="w-4 text-center font-bold">:</span>
+              <span className="w-4 text-center font-bold" style={{ color: '#000000' }}>:</span>
               <div className="flex-1 text-left pl-1">
                 {renderCell('address.province', toPureJapanese(data.address.province), 'left')}
               </div>
@@ -267,9 +294,9 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
                 <th style={{ width: '12.5%' }}>学歴</th>
                 <th style={{ width: '12.5%' }}>職業</th>
               </tr>
-              {/* Header Baris 2: Nomor Indeks (1) s/d (8) Sesuai Foto Resmi */}
+              {/* Header Baris 2: Nomor Indeks (1) s/d (8) */}
               {showColumnIndices && (
-                <tr className="header-indices-row text-[8pt] font-normal text-slate-800">
+                <tr className="header-indices-row text-[8pt] font-normal" style={{ color: '#000000' }}>
                   <th>(1)</th>
                   <th>(2)</th>
                   <th>(3)</th>
@@ -289,8 +316,10 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
                   : '-';
 
                 return (
-                  <tr key={`t1-row-${rowNo}`} className="h-[20px]">
-                    <td className="font-bold text-center font-mono">{rowNo}</td>
+                  <tr key={`t1-row-${rowNo}`} className="h-[25px]" style={{ height: '25px', overflow: 'visible' }}>
+                    <td className="font-bold text-center font-mono" style={{ height: '25px', verticalAlign: 'middle', padding: '0 2px' }}>
+                      <div className="w-full h-[25px] flex items-center justify-center font-mono font-bold">{rowNo}</div>
+                    </td>
                     <td className="text-left px-1 font-medium">
                       {member ? renderCell(`members.${index}.fullNameKatakana`, japaneseName, 'left') : '-'}
                     </td>
@@ -342,9 +371,9 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
                 <th style={{ width: '16%' }}>父</th>
                 <th style={{ width: '16%' }}>母</th>
               </tr>
-              {/* Header Baris 3: Nomor Indeks (9) s/d (15) Sesuai Foto Resmi */}
+              {/* Header Baris 3: Nomor Indeks (9) s/d (15) */}
               {showColumnIndices && (
-                <tr className="header-indices-row text-[8pt] font-normal text-slate-800">
+                <tr className="header-indices-row text-[8pt] font-normal" style={{ color: '#000000' }}>
                   <th>(9)</th>
                   <th>(10)</th>
                   <th>(11)</th>
@@ -359,16 +388,18 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
               {rows.map((member, index) => {
                 const rowNo = index + 1;
                 return (
-                  <tr key={`t2-row-${rowNo}`} className="h-[20px]">
-                    <td className="font-bold text-center font-mono">{rowNo}</td>
+                  <tr key={`t2-row-${rowNo}`} className="h-[25px]" style={{ height: '25px', overflow: 'visible' }}>
+                    <td className="font-bold text-center font-mono" style={{ height: '25px', verticalAlign: 'middle', padding: '0 2px' }}>
+                      <div className="w-full h-[25px] flex items-center justify-center font-mono font-bold">{rowNo}</div>
+                    </td>
                     <td className="text-center font-medium">
                       {member ? renderCell(`members.${index}.maritalStatus`, toPureJapanese(member.maritalStatus), 'center') : '-'}
                     </td>
-                    <td className="text-center font-medium text-black">
+                    <td className="text-center font-medium">
                       {member ? renderCell(`members.${index}.relationStatus`, toPureJapanese(member.relationStatus), 'center') : '-'}
                     </td>
-                    <td className="text-center">
-                      {member ? 'インドネシア' : '-'}
+                    <td className="text-center" style={{ height: '25px', verticalAlign: 'middle', padding: '0 2px' }}>
+                      <div className="w-full h-[25px] flex items-center justify-center">{member ? 'インドネシア' : '-'}</div>
                     </td>
                     <td className="text-center font-mono">
                       {member ? renderCell(`members.${index}.passportNumber`, member.passportNumber || '-', 'center') : '-'}
@@ -389,14 +420,19 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
           </table>
         </div>
 
-        {/* ================= FOOTER SECTION (PERSIS SESUAI FOTO RESMI SCREENSHOT_105000) ================= */}
-        <div className="grid grid-cols-12 gap-3 text-[8.5pt] leading-tight items-start pt-1">
-          {/* Kolom Kiri: 発行日 & 4 Lembar Resmi (第1枚目 s/d 第4枚目) */}
+        {/* ================= FOOTER SECTION ================= */}
+        <div
+          className="grid grid-cols-12 gap-3 text-[8.5pt] leading-tight items-start pt-1"
+          style={{ color: '#000000' }}
+        >
+          {/* Kolom Kiri: 発行日 & 4 Lembar Resmi */}
           <div className="col-span-4 space-y-1">
             <div className="flex items-center">
-              <span className="w-16 font-medium text-black shrink-0 tracking-wider">発行日</span>
-              <span className="w-3 text-center font-bold">:</span>
-              <div className="pl-1 text-black font-sans">
+              <span className="w-16 font-medium shrink-0 tracking-wider" style={{ color: '#000000' }}>
+                発行日
+              </span>
+              <span className="w-3 text-center font-bold" style={{ color: '#000000' }}>:</span>
+              <div className="pl-1 font-sans" style={{ color: '#000000' }}>
                 {data.issuedDate ? (
                   renderCell('issuedDate', data.issuedDate, 'left')
                 ) : (
@@ -406,59 +442,70 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
             </div>
 
             <div className="flex items-center">
-              <span className="w-16 font-medium text-black shrink-0 tracking-wide">第1枚目</span>
-              <span className="w-3 text-center font-bold">:</span>
-              <span className="pl-1 font-medium text-black">家長用</span>
+              <span className="w-16 font-medium shrink-0 tracking-wide" style={{ color: '#000000' }}>
+                第1枚目
+              </span>
+              <span className="w-3 text-center font-bold" style={{ color: '#000000' }}>:</span>
+              <span className="pl-1 font-medium" style={{ color: '#000000' }}>家長用</span>
             </div>
 
             <div className="flex items-center">
-              <span className="w-16 font-medium text-black shrink-0 tracking-wide">第2枚目</span>
-              <span className="w-3 text-center font-bold">:</span>
-              <span className="pl-1 font-medium text-black">隣組長用</span>
+              <span className="w-16 font-medium shrink-0 tracking-wide" style={{ color: '#000000' }}>
+                第2枚目
+              </span>
+              <span className="w-3 text-center font-bold" style={{ color: '#000000' }}>:</span>
+              <span className="pl-1 font-medium" style={{ color: '#000000' }}>隣組長用</span>
             </div>
 
             <div className="flex items-center">
-              <span className="w-16 font-medium text-black shrink-0 tracking-wide">第3枚目</span>
-              <span className="w-3 text-center font-bold">:</span>
-              <span className="pl-1 font-medium text-black">村長用</span>
+              <span className="w-16 font-medium shrink-0 tracking-wide" style={{ color: '#000000' }}>
+                第3枚目
+              </span>
+              <span className="w-3 text-center font-bold" style={{ color: '#000000' }}>:</span>
+              <span className="pl-1 font-medium" style={{ color: '#000000' }}>村長用</span>
             </div>
 
             <div className="flex items-center">
-              <span className="w-16 font-medium text-black shrink-0 tracking-wide">第4枚目</span>
-              <span className="w-3 text-center font-bold">:</span>
-              <span className="pl-1 font-medium text-black">郡長用</span>
+              <span className="w-16 font-medium shrink-0 tracking-wide" style={{ color: '#000000' }}>
+                第4枚目
+              </span>
+              <span className="w-3 text-center font-bold" style={{ color: '#000000' }}>:</span>
+              <span className="pl-1 font-medium" style={{ color: '#000000' }}>郡長用</span>
             </div>
           </div>
 
-          {/* Kolom Tengah: 家長, (署名), Garis Tanda Tangan, 指印又は署名 */}
+          {/* Kolom Tengah: 家長, （署名）, Garis, 指印又は署名 */}
           <div className="col-span-4 text-center px-4 flex flex-col justify-between h-[100px]">
             <div>
-              <div className="font-bold text-black text-[9.5pt] tracking-wider">家長</div>
-              <div className="text-[8pt] text-black mt-1">（署名）</div>
+              <div className="font-bold text-[9.5pt] tracking-wider" style={{ color: '#000000' }}>
+                家長
+              </div>
+              <div className="text-[8pt] mt-1" style={{ color: '#000000' }}>（署名）</div>
             </div>
             <div>
-              <div className="border-b border-black w-48 mx-auto mb-1"></div>
-              <div className="text-[8pt] text-black tracking-wide">指印又は署名</div>
+              <div className="border-b w-48 mx-auto mb-1" style={{ borderColor: '#000000' }}></div>
+              <div className="text-[8pt] tracking-wide" style={{ color: '#000000' }}>指印又は署名</div>
             </div>
           </div>
 
-          {/* Kolom Kanan: 民事登録事務官, (署名)(公印), Garis Tanda Tangan & NIP, 公務員番号 */}
+          {/* Kolom Kanan: 民事登録事務官, （署名）（公印）, Garis & NIP, 公務員番号 */}
           <div className="col-span-4 text-center px-4 flex flex-col justify-between h-[100px]">
             <div>
-              <div className="font-bold text-black text-[9.5pt] tracking-wider">民事登録事務官</div>
-              <div className="text-[8pt] text-black mt-1">（署名）（公印）</div>
+              <div className="font-bold text-[9.5pt] tracking-wider" style={{ color: '#000000' }}>
+                民事登録事務官
+              </div>
+              <div className="text-[8pt] mt-1" style={{ color: '#000000' }}>（署名）（公印）</div>
             </div>
             <div>
-              {/* Optional Signatory NIP sits nicely on the line */}
-              <div className="font-mono text-[8pt] text-black h-4 flex items-center justify-center">
+              <div className="font-mono text-[8pt] h-4 flex items-center justify-center" style={{ color: '#000000' }}>
                 {data.signatoryNip ? (
                   <span>{data.signatoryNip}</span>
                 ) : (
                   <span className="opacity-0">-</span>
                 )}
               </div>
-              <div className="border-b border-black w-48 mx-auto mb-1"></div>
-              <div className="text-[8pt] text-black tracking-wide">公務員番号</div>
+              <div className="border-b w-48 mx-auto mb-1" style={{ borderColor: '#000000' }}></div>
+              <div className="text-[8pt] tracking-wide" style={{ color: '#000000' }}>公務員番号</div>
             </div>
           </div>
         </div>

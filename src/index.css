@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 @layer base {
+  /* Force standard hex border color on all elements to prevent Tailwind v4 oklch crash in canvas */
+  *, ::before, ::after {
+    border-color: #000000;
+  }
+
   body {
     font-family: "MS PGothic", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", -apple-system, sans-serif;
     background-color: #f1f5f9;
@@ -10,14 +15,37 @@
   }
 }
 
+/* Mobile scrollbar hiding and ergonomics */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
 /* Document Paper & Table Standards matching Japanese Official Koseki Tohon Sheet */
 .document-outer-frame {
   background: #ffffff;
   border: 2px solid #000000;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.12);
   color: #000000;
-  line-height: 1.25;
+  line-height: 1.35;
   box-sizing: border-box;
+  font-family: "MS PGothic", "MS Gothic", "Yu Gothic", "YuGothic", "Meiryo", "BIZ UDPGothic", sans-serif;
+  overflow: visible;
+}
+
+/* Force pure standard hex colors on the entire official sheet */
+#kk-preview-sheet,
+#kk-preview-sheet * {
+  border-color: #000000 !important;
+  color: #000000 !important;
+  outline-color: #000000 !important;
 }
 
 /* Precision government table grid */
@@ -26,22 +54,43 @@
   border-collapse: collapse;
   font-size: 8.5pt;
   table-layout: fixed;
+  overflow: visible !important;
+}
+
+.kk-table tr {
+  height: 25px !important;
+  overflow: visible !important;
 }
 
 .kk-table th,
 .kk-table td {
   border: 1px solid #000000 !important;
-  padding: 2px 3px;
+  padding: 0 3px !important;
   text-align: center;
-  vertical-align: middle;
+  vertical-align: middle !important;
   word-break: break-word;
-  color: #000000;
+  color: #000000 !important;
+  background-color: transparent;
+  overflow: visible !important;
+  height: 25px !important;
+  line-height: normal !important;
+}
+
+.kk-table td > div {
+  height: 25px !important;
+  min-height: 25px !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
 .kk-table th {
   background-color: #f0f0f0 !important;
   font-weight: bold;
   font-size: 8.5pt;
+  color: #000000 !important;
+  padding: 2px 2px !important;
+  vertical-align: middle !important;
+  overflow: visible !important;
 }
 
 .header-indices-row th {
@@ -49,6 +98,7 @@
   font-weight: normal !important;
   font-size: 7.5pt !important;
   padding: 1px 2px !important;
+  color: #000000 !important;
 }
 
 .text-left {
@@ -63,33 +113,11 @@
   text-align: right !important;
 }
 
-/* Hanko Seal */
-.hanko-seal {
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border: 2px solid #dc2626;
-  border-radius: 50%;
-  color: #dc2626;
-  font-weight: 900;
-  user-select: none;
-  transform: rotate(-3deg);
-  background: rgba(254, 242, 242, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.25);
-  font-family: 'Noto Serif JP', serif;
-  letter-spacing: 0.05em;
-  line-height: 1.1;
-}
-
 /* Print Rules - Wajib A4 Landscape (297mm x 210mm) dengan margin 8mm 10mm */
 @media print {
   @page {
     size: A4 landscape;
-    margin: 8mm 10mm;
+    margin: 6mm 8mm;
   }
 
   *, *:before, *:after {
@@ -111,23 +139,41 @@
     display: none !important;
   }
 
+  /* Reset any mobile scaling or overflow containers completely for printing */
+  .preview-scale-wrapper,
+  .preview-scale-wrapper > div,
+  .preview-column-wrapper,
   .print-area-wrapper {
-    padding: 0 !important;
-    margin: 0 !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
     width: 100% !important;
-    max-width: 100% !important;
-    box-shadow: none !important;
-    background: transparent !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .document-outer-frame {
+  .document-outer-frame,
+  #kk-preview-sheet {
     box-shadow: none !important;
     border: 1.5px solid #000000 !important;
     width: 100% !important;
+    min-width: 0 !important;
     max-width: 100% !important;
-    padding: 6mm 8mm !important;
-    margin: 0 !important;
+    padding: 5mm 6mm !important;
+    margin: 0 auto !important;
     font-size: 8.5pt !important;
+    transform: none !important;
+    overflow: visible !important;
+    height: auto !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
@@ -156,14 +202,16 @@
     print-color-adjust: exact !important;
   }
 
-  .text-left {
-    text-align: left !important;
-  }
-
-  .hanko-seal {
-    border-color: #dc2626 !important;
-    color: #dc2626 !important;
+  .header-indices-row th {
+    background-color: #f5f5f5 !important;
+    font-weight: normal !important;
+    font-size: 7.5pt !important;
+    padding: 1px 2px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  .text-left {
+    text-align: left !important;
   }
 }

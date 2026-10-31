@@ -224,11 +224,11 @@ export const InputModule: React.FC<InputModuleProps> = ({
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 bg-slate-50 text-xs sm:text-sm font-medium overflow-x-auto items-center">
+      <div className="flex border-b border-slate-200 bg-slate-50 text-xs sm:text-sm font-medium overflow-x-auto no-scrollbar scroll-smooth items-center px-1">
         <button
           type="button"
           onClick={() => setActiveTab('form')}
-          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'form'
               ? 'border-blue-600 text-blue-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -241,7 +241,7 @@ export const InputModule: React.FC<InputModuleProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('presets')}
-          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'presets'
               ? 'border-blue-600 text-blue-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -254,7 +254,7 @@ export const InputModule: React.FC<InputModuleProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('translator')}
-          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'translator'
               ? 'border-blue-600 text-blue-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -267,7 +267,7 @@ export const InputModule: React.FC<InputModuleProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('vocabulary')}
-          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 border-b-2 font-semibold whitespace-nowrap shrink-0 transition-colors ${
             activeTab === 'vocabulary'
               ? 'border-blue-600 text-blue-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'

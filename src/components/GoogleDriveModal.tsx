@@ -33,8 +33,7 @@ import {
   APP_FOLDER_NAME,
 } from '../services/googleDrive';
 import { TranslationResult } from '../types';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { generatePdfBlobFromElement } from '../utils/pdfGenerator';
 
 interface GoogleDriveModalProps {
   isOpen: boolean;
@@ -143,27 +142,10 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
       const folderId = appFolderId || (await getOrCreateAppFolder(accessToken));
       setAppFolderId(folderId);
 
-      // Render the official preview sheet to canvas for PDF
-      const sheetElement = document.getElementById('kk-official-print-sheet');
-      if (!sheetElement) {
-        throw new Error('Elemen dokumen tidak ditemukan.');
-      }
-
-      const canvas = await html2canvas(sheetElement, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      const pdf = new jsPDF({
+      // Render the official preview sheet to PDF blob safely
+      const pdfBlob = await generatePdfBlobFromElement('kk-preview-sheet', {
         orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4',
       });
-
-      pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
-      const pdfBlob = pdf.output('blob');
 
       const cleanName = (currentData.headOfFamily || 'Keluarga')
         .replace(/[^a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '_');
@@ -255,7 +237,7 @@ export const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div className="no-print fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-slate-300 animate-in fade-in zoom-in-95 duration-150">
         {/* Modal Top Header */}
         <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">

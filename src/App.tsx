@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TranslationResult, TranslatorInfo, SAMPLE_PRESETS, EMPTY_TRANSLATION_DATA } from './types';
 import { Navbar } from './components/Navbar';
 import { InputModule } from './components/InputModule';
@@ -6,7 +6,18 @@ import { PreviewSheet } from './components/PreviewSheet';
 import { ExportModal } from './components/ExportModal';
 import { PrivacyModal } from './components/PrivacyModal';
 import { GoogleDriveModal } from './components/GoogleDriveModal';
-import { Download, CheckCircle2, ShieldCheck, AlertTriangle } from 'lucide-react';
+import {
+  Download,
+  CheckCircle2,
+  ShieldCheck,
+  AlertTriangle,
+  Eye,
+  SlidersHorizontal,
+  Cloud,
+  Maximize2,
+  ZoomIn,
+  Sparkles,
+} from 'lucide-react';
 
 export default function App() {
   // In-Memory RAM only: initialized with realistic preset
@@ -25,10 +36,28 @@ export default function App() {
 
   const [viewMode, setViewMode] = useState<'split' | 'preview' | 'editor'>('split');
   const [showColumnIndices, setShowColumnIndices] = useState<boolean>(true);
+  const [mobileZoomMode, setMobileZoomMode] = useState<'fit' | '100%'>('fit');
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
   const [isGoogleDriveModalOpen, setIsGoogleDriveModalOpen] = useState<boolean>(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState<boolean>(false);
+
+  // Measure container width for responsive scaling on mobile
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(400);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (previewContainerRef.current) {
+        setContainerWidth(previewContainerRef.current.clientWidth);
+      } else {
+        setContainerWidth(window.innerWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, [viewMode]);
 
   // Hook lifecycle useEffect for beforeunload confirmation (Zero Data Retention)
   useEffect(() => {
@@ -57,6 +86,11 @@ export default function App() {
     setIsResetConfirmOpen(false);
   };
 
+  // Calculate dynamic fit scale for 1040px wide sheet
+  // On mobile screens (~360px-430px), this scales the sheet down nicely to fit the full width
+  const fitScale = Math.min(1, Math.max(0.26, (containerWidth - 20) / 1040));
+  const isScaleApplicable = fitScale < 0.98;
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       {/* Top Navbar */}
@@ -70,52 +104,60 @@ export default function App() {
       />
 
       {/* Main Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-2.5 sm:p-5 pb-24 lg:pb-8">
         {/* Mobile View Toggle Bar (visible on smaller screens) */}
-        <div className="lg:hidden mb-3 flex items-center justify-center bg-white p-1 rounded-lg border border-slate-200 text-xs no-print">
+        <div className="lg:hidden mb-2.5 flex items-center justify-center bg-white p-1 rounded-xl border border-slate-200 text-xs no-print shadow-2xs">
           <button
             type="button"
             onClick={() => setViewMode('editor')}
-            className={`flex-1 py-2 text-center rounded font-semibold transition-colors ${
+            className={`flex-1 py-2.5 text-center rounded-lg font-semibold transition-colors flex items-center justify-center gap-1.5 ${
               viewMode === 'editor'
                 ? 'bg-slate-900 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Formulir Data KK
+            <SlidersHorizontal size={14} />
+            <span>Formulir Data KK</span>
           </button>
           <button
             type="button"
             onClick={() => setViewMode('preview')}
-            className={`flex-1 py-2 text-center rounded font-semibold transition-colors ${
+            className={`flex-1 py-2.5 text-center rounded-lg font-semibold transition-colors flex items-center justify-center gap-1.5 ${
               viewMode === 'preview'
                 ? 'bg-slate-900 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Lembar 戸籍謄本 (Preview)
+            <Eye size={14} />
+            <span>Lembar 戸籍謄本</span>
+            <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 text-[10px] flex items-center justify-center font-bold">
+              {data.members.length}
+            </span>
           </button>
         </div>
 
         {/* Privacy-First & Zero-Retention Notice Bar */}
-        <div className="no-print mb-3 px-3.5 py-2 bg-emerald-50 border border-emerald-200/80 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-900 shadow-2xs">
-          <div className="flex items-center gap-2">
+        <div className="no-print mb-3 px-3 py-2 bg-emerald-50 border border-emerald-200/80 rounded-xl flex items-center justify-between gap-2 text-xs text-emerald-900 shadow-2xs">
+          <div className="flex items-center gap-2 min-w-0">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="font-bold flex items-center gap-1">
+            <span className="font-bold flex items-center gap-1 text-[11px] sm:text-xs shrink-0">
               <ShieldCheck size={14} className="text-emerald-700" />
-              <span>Zero-Data Retention:</span>
+              <span>Zero-Data:</span>
             </span>
-            <span className="text-emerald-800 text-[11px] hidden sm:inline">
-              Data hanya diproses di RAM browser Anda &bull; Tanpa Database &bull; Auto-Cleanup saat tab ditutup
+            <span className="text-emerald-800 text-[11px] truncate hidden sm:inline">
+              Data diproses di RAM &bull; Tanpa Database &bull; Auto-Cleanup saat tab ditutup
+            </span>
+            <span className="text-emerald-800 text-[11px] truncate sm:hidden">
+              100% RAM Browser Aman
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setIsPrivacyModalOpen(true)}
               className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 underline underline-offset-2 transition-colors"
             >
-              Pelajari Privasi
+              Info
             </button>
             <span className="text-emerald-300">|</span>
             <button
@@ -123,7 +165,7 @@ export default function App() {
               onClick={() => setIsResetConfirmOpen(true)}
               className="text-[11px] font-semibold text-red-600 hover:text-red-700 transition-colors"
             >
-              Hapus RAM
+              Reset RAM
             </button>
           </div>
         </div>
@@ -131,84 +173,226 @@ export default function App() {
         {/* Workspace Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* Left Column: Form Input Module */}
-          {(viewMode === 'split' || viewMode === 'editor') && (
+          <div
+            className={`no-print transition-all ${
+              viewMode === 'split'
+                ? 'lg:col-span-5'
+                : viewMode === 'editor'
+                ? 'lg:col-span-12 max-w-4xl mx-auto w-full'
+                : 'hidden'
+            }`}
+          >
+            <InputModule
+              data={data}
+              translator={translator}
+              onUpdateData={setData}
+              onUpdateTranslator={setTranslator}
+              onJumpToPreview={() => setViewMode('preview')}
+            />
+          </div>
+
+          {/* Right Column: Live Excel-Style Preview Sheet (Always kept mounted for instant PDF export) */}
+          <div
+            className={`preview-column-wrapper transition-all ${
+              viewMode === 'split'
+                ? 'lg:col-span-7'
+                : viewMode === 'preview'
+                ? 'lg:col-span-12'
+                : 'fixed -left-[9999px] top-0 pointer-events-none opacity-0'
+            }`}
+          >
+            {/* Preview Toolbar */}
             <div
-              className={`no-print transition-all ${
-                viewMode === 'split' ? 'lg:col-span-5' : 'lg:col-span-12 max-w-4xl mx-auto w-full'
+              className={`no-print mb-2.5 bg-white p-2.5 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs shadow-2xs ${
+                viewMode === 'editor' ? 'hidden' : ''
               }`}
             >
-              <InputModule
-                data={data}
-                translator={translator}
-                onUpdateData={setData}
-                onUpdateTranslator={setTranslator}
-                onJumpToPreview={() => setViewMode('preview')}
-              />
-            </div>
-          )}
+              <div className="flex items-center gap-2 text-slate-800 min-w-0">
+                <span className="font-bold flex items-center gap-1 shrink-0">
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                  <span className="hidden sm:inline">公式書式プレビュー（全項目日本語）:</span>
+                  <span className="sm:hidden">戸籍謄本 A4:</span>
+                </span>
+                <span className="text-slate-500 font-mono text-[11px] truncate">
+                  {data.members.length} 名 &bull; No: {data.familyCardNumber || '-'}
+                </span>
+              </div>
 
-          {/* Right Column: Live Excel-Style Preview Sheet (100% Pure Japanese Official Sheet) */}
-          {(viewMode === 'split' || viewMode === 'preview') && (
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                {/* Mobile Fit vs 100% Zoom Toggle */}
+                {isScaleApplicable && (
+                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setMobileZoomMode('fit')}
+                      className={`flex items-center gap-1 px-2 py-1 rounded font-medium transition-colors ${
+                        mobileZoomMode === 'fit'
+                          ? 'bg-white text-slate-900 shadow-xs font-bold'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Pas di layar ponsel tanpa scroll horizontal"
+                    >
+                      <Maximize2 size={12} />
+                      <span>Pas Layar</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMobileZoomMode('100%')}
+                      className={`flex items-center gap-1 px-2 py-1 rounded font-medium transition-colors ${
+                        mobileZoomMode === '100%'
+                          ? 'bg-white text-slate-900 shadow-xs font-bold'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Ukuran asli 100% (geser ke samping)"
+                    >
+                      <ZoomIn size={12} />
+                      <span>100% Asli</span>
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setShowColumnIndices((prev) => !prev)}
+                  className={`hidden sm:inline-flex px-2.5 py-1.5 rounded text-[11px] font-medium border transition-colors ${
+                    showColumnIndices
+                      ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-500'
+                  }`}
+                  title="Tampilkan / sembunyikan baris nomor indeks kolom (1) s/d (15)"
+                >
+                  Kolom (1)-(15): {showColumnIndices ? 'Aktif' : 'Nonaktif'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsExportModalOpen(true)}
+                  className="px-3 sm:px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition-colors shadow-xs"
+                  title="Download dokumen PDF"
+                >
+                  <Download size={13} />
+                  <span>Download PDF</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Helper Hint when on phone */}
+            {isScaleApplicable && viewMode !== 'editor' && (
+              <div className="no-print lg:hidden mb-2 px-3 py-1.5 bg-blue-50 border border-blue-200/70 rounded-lg text-[11px] text-blue-800 flex items-center justify-between gap-2">
+                <span>
+                  {mobileZoomMode === 'fit'
+                    ? '📱 Tampilan Pas Layar aktif (seluruh lembar terlihat).'
+                    : '🔍 Ukuran 100% aktif (geser ke samping untuk detail).'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMobileZoomMode(mobileZoomMode === 'fit' ? '100%' : 'fit')}
+                  className="font-bold underline shrink-0 text-blue-900"
+                >
+                  {mobileZoomMode === 'fit' ? 'Zoom 100%' : 'Pas Layar'}
+                </button>
+              </div>
+            )}
+
+            {/* The Live Document Paper - Exact Replica of Reference Image */}
             <div
-              className={`transition-all ${
-                viewMode === 'split' ? 'lg:col-span-7' : 'lg:col-span-12'
-              }`}
+              ref={previewContainerRef}
+              className="bg-slate-200/70 p-1.5 sm:p-4 rounded-xl border border-slate-300 shadow-inner flex flex-col items-center overflow-hidden"
             >
-              {/* Preview Toolbar */}
-              <div className="no-print mb-2.5 bg-white p-2.5 rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-2 text-slate-800">
-                  <span className="font-bold flex items-center gap-1">
-                    <CheckCircle2 size={14} className="text-emerald-600" />
-                    <span>公式書式プレビュー（全項目日本語）:</span>
-                  </span>
-                  <span className="text-slate-500 font-mono text-[11px]">
-                    {data.members.length} 名記載 | 番号: {data.familyCardNumber || '-'}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowColumnIndices((prev) => !prev)}
-                    className={`px-2.5 py-1.5 rounded text-[11px] font-medium border transition-colors ${
-                      showColumnIndices
-                        ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
-                        : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-500'
-                    }`}
-                    title="Tampilkan / sembunyikan baris nomor indeks kolom (1) s/d (15)"
+              {mobileZoomMode === 'fit' && isScaleApplicable ? (
+                <div
+                  className="preview-scale-wrapper w-full flex justify-center transition-all duration-150 overflow-hidden"
+                  style={{
+                    height: `${Math.ceil(740 * fitScale)}px`,
+                  }}
+                >
+                  <div
+                    style={{
+                      transform: `scale(${fitScale})`,
+                      transformOrigin: 'top center',
+                      width: '1040px',
+                      minWidth: '1040px',
+                    }}
                   >
-                    Nomor Kolom (1)-(15): {showColumnIndices ? 'Aktif' : 'Nonaktif'}
-                  </button>
-
-                  <span className="text-[11px] text-slate-400 hidden sm:inline">|</span>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsExportModalOpen(true)}
-                    className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs flex items-center gap-1.5 transition-colors shadow-xs"
-                    title="Download dokumen PDF"
-                  >
-                    <Download size={13} />
-                    <span>Download PDF</span>
-                  </button>
+                    <PreviewSheet
+                      data={data}
+                      onUpdateData={setData}
+                      showColumnIndices={showColumnIndices}
+                    />
+                  </div>
                 </div>
-              </div>
-
-              {/* The Live Document Paper - Exact Replica of Reference Image */}
-              <div className="bg-slate-200/70 p-2 sm:p-4 rounded-xl border border-slate-300 shadow-inner flex justify-center">
-                <PreviewSheet
-                  data={data}
-                  onUpdateData={setData}
-                  showColumnIndices={showColumnIndices}
-                />
-              </div>
+              ) : (
+                <div className="w-full overflow-x-auto touch-pan-x scroll-smooth pb-2 flex justify-center">
+                  <PreviewSheet
+                    data={data}
+                    onUpdateData={setData}
+                    showColumnIndices={showColumnIndices}
+                  />
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </main>
 
+      {/* Ergonomic Thumb-Zone Mobile Bottom Navigation Bar (Fixed on phone screens) */}
+      <nav className="no-print lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-1.5 safe-bottom shadow-lg">
+        <div className="max-w-md mx-auto flex items-center justify-around gap-1">
+          <button
+            type="button"
+            onClick={() => setViewMode('editor')}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-lg transition-colors min-h-[46px] ${
+              viewMode === 'editor'
+                ? 'text-blue-600 font-bold bg-blue-50/70'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <SlidersHorizontal size={18} />
+            <span className="text-[10px] mt-0.5">Form KK</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode('preview')}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-lg transition-colors min-h-[46px] relative ${
+              viewMode === 'preview'
+                ? 'text-blue-600 font-bold bg-blue-50/70'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <div className="relative">
+              <Eye size={18} />
+              {data.members.length > 0 && (
+                <span className="absolute -top-1 -right-2 bg-blue-600 text-white rounded-full text-[9px] w-3.5 h-3.5 flex items-center justify-center font-bold">
+                  {data.members.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] mt-0.5">Dokumen 戸籍</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsGoogleDriveModalOpen(true)}
+            className="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-sky-700 transition-colors min-h-[46px]"
+          >
+            <Cloud size={18} className="text-sky-600" />
+            <span className="text-[10px] mt-0.5">Drive</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex flex-col items-center justify-center py-1 px-4 rounded-xl bg-blue-600 text-white font-bold transition-transform active:scale-95 shadow-sm shadow-blue-600/30 min-h-[46px]"
+          >
+            <Download size={18} />
+            <span className="text-[10px] mt-0.5">Unduh PDF</span>
+          </button>
+        </div>
+      </nav>
+
       {/* Footer Info (Hidden during Print) */}
-      <footer className="no-print bg-white border-t border-slate-200 py-4 mt-8 text-center text-xs text-slate-500">
+      <footer className="no-print bg-white border-t border-slate-200 py-4 mb-16 lg:mb-0 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-medium">
             <span className="font-bold text-slate-800">戸籍謄本 翻訳文</span>
