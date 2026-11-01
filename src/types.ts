@@ -3,6 +3,9 @@
  * Full Japanese Output Standard
  */
 
+export const GITHUB_PROFILE_URL = 'https://github.com/irawanadii271-spec';
+export const GITHUB_REPO_URL = 'https://github.com/irawanadii271-spec/kartu-keluarga';
+
 export interface FamilyMember {
   no: number;
   fullNameOriginal: string;

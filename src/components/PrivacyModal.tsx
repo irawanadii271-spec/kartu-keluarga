@@ -10,7 +10,10 @@ import {
   AlertTriangle,
   Eye,
   EyeOff,
+  Github,
+  ExternalLink,
 } from 'lucide-react';
+import { GITHUB_REPO_URL } from '../types';
 
 interface PrivacyModalProps {
   isOpen: boolean;
@@ -180,6 +183,36 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({
                 <span>Pengaturan API Key berhasil diperbarui di browser lokal.</span>
               </div>
             )}
+          </div>
+
+          {/* Open Source & GitHub Repository Transparency */}
+          <div className="p-3 bg-slate-900 text-white rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 text-white">
+                <Github size={18} />
+              </div>
+              <div>
+                <div className="font-bold text-xs flex items-center gap-1.5">
+                  <span>Source Code Terbuka di GitHub</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                    Open Source
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-300 mt-0.5">
+                  Seluruh arsitektur kode dan generator PDF dapat diaudit secara transparan di repositori <strong>irawanadii271-spec/kartu-keluarga</strong>.
+                </div>
+              </div>
+            </div>
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-lg text-xs transition-colors shrink-0 shadow-2xs"
+            >
+              <Github size={13} />
+              <span>Buka GitHub</span>
+              <ExternalLink size={11} className="text-slate-500" />
+            </a>
           </div>
 
           {/* Quick Purge Action in Modal */}

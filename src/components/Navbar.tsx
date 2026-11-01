@@ -4,14 +4,16 @@ import {
   Eye,
   SlidersHorizontal,
   Columns,
-  CheckCircle2,
   ShieldCheck,
   RotateCcw,
   Cloud,
   MoreVertical,
   X,
   FileSpreadsheet,
+  Github,
+  ExternalLink,
 } from 'lucide-react';
+import { GITHUB_REPO_URL } from '../types';
 
 interface NavbarProps {
   viewMode: 'split' | 'preview' | 'editor';
@@ -51,28 +53,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
-        {/* Brand & Subtitle */}
-        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        {/* Brand */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 flex items-center justify-center text-white shadow-xs shrink-0">
             <span className="font-serif font-black text-xs sm:text-sm tracking-widest">戸籍</span>
           </div>
 
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <h1 className="font-bold text-slate-900 text-xs sm:text-base tracking-tight font-gothic truncate">
-                <span>戸籍謄本 翻訳</span>
-                <span className="hidden sm:inline"> (KK Translator JP)</span>
-              </h1>
-              <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <CheckCircle2 size={11} className="text-emerald-600" />
-                全項目日本語 (Full JP)
-              </span>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">
-              <span className="sm:hidden text-emerald-700 font-medium">A4横・公式様式</span>
-              <span className="hidden sm:inline">インドネシア共和国 家族登録証明書 (Kartu Keluarga) 公式A4横様式</span>
-            </p>
-          </div>
+          <h1 className="font-bold text-slate-900 text-sm sm:text-base tracking-tight font-gothic whitespace-nowrap">
+            戸籍謄本 翻訳
+          </h1>
         </div>
 
         {/* Action Controls */}
@@ -138,6 +127,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Google Drive</span>
           </button>
 
+          {/* GitHub Repository Link (Desktop) */}
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 hover:border-slate-300 transition-colors shadow-2xs group"
+            title="Kunjungi Repositori Codingan GitHub @irawanadii271-spec/kartu-keluarga"
+          >
+            <Github size={14} className="text-slate-900 group-hover:scale-110 transition-transform" />
+            <span>GitHub</span>
+            <ExternalLink size={11} className="text-slate-400 group-hover:text-slate-700" />
+          </a>
+
           {/* Reset All Data Button (Desktop) */}
           <button
             type="button"
@@ -181,6 +183,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2.5 py-1">
                   Menu & Integrasi
                 </div>
+
+                <a
+                  href={GITHUB_REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors text-left"
+                >
+                  <div className="w-6 h-6 rounded-md bg-slate-900 text-white flex items-center justify-center shrink-0">
+                    <Github size={14} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 flex items-center gap-1">
+                      <span>GitHub Repository</span>
+                      <ExternalLink size={10} className="text-slate-400" />
+                    </div>
+                    <div className="text-[10px] text-slate-500 truncate">@irawanadii271-spec &bull; kartu-keluarga</div>
+                  </div>
+                </a>
 
                 <button
                   type="button"

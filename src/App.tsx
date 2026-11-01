@@ -17,7 +17,10 @@ import {
   Maximize2,
   ZoomIn,
   Sparkles,
+  Github,
+  ExternalLink,
 } from 'lucide-react';
+import { GITHUB_REPO_URL, GITHUB_PROFILE_URL } from './types';
 
 export default function App() {
   // In-Memory RAM only: initialized with realistic preset
@@ -392,15 +395,36 @@ export default function App() {
       </nav>
 
       {/* Footer Info (Hidden during Print) */}
-      <footer className="no-print bg-white border-t border-slate-200 py-4 mb-16 lg:mb-0 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2 font-medium">
-            <span className="font-bold text-slate-800">戸籍謄本 翻訳文</span>
-            <span>&bull;</span>
-            <span>インドネシア共和国 家族登録証明書 (Kartu Keluarga) 日本語公式様式</span>
+      <footer className="no-print bg-white border-t border-slate-200 py-4 mb-16 lg:mb-0 text-xs text-slate-600">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-center sm:text-left">
+            <div className="flex items-center gap-1.5 font-medium">
+              <span className="font-bold text-slate-800">戸籍謄本 翻訳文</span>
+              <span>&bull;</span>
+              <span>Kartu Keluarga (KK) Standar Resmi Jepang</span>
+            </div>
+            <span className="hidden sm:inline text-slate-300">|</span>
+            <span className="text-[11px] text-slate-400">
+              A4横判・出入国在留管理庁・市区町村役所 提出用
+            </span>
           </div>
-          <div className="text-[11px] text-slate-400">
-            出入国在留管理庁（入管）・市区町村役所 提出用 A4横判
+
+          {/* GitHub Profile & Repository Direct Access */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-500 hidden sm:inline">
+              Dikembangkan oleh <strong className="text-slate-700">Adi Irawan</strong>
+            </span>
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-all shadow-xs group"
+              title="Kunjungi Repositori Codingan GitHub @irawanadii271-spec/kartu-keluarga"
+            >
+              <Github size={14} className="text-white group-hover:scale-110 transition-transform" />
+              <span>GitHub: kartu-keluarga</span>
+              <ExternalLink size={11} className="text-slate-400 group-hover:text-white" />
+            </a>
           </div>
         </div>
       </footer>
