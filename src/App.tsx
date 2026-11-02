@@ -306,7 +306,7 @@ export default function App() {
                 <div
                   className="preview-scale-wrapper w-full flex justify-center transition-all duration-150 overflow-hidden"
                   style={{
-                    height: `${Math.ceil(740 * fitScale)}px`,
+                    height: `${Math.ceil(1020 * fitScale)}px`,
                   }}
                 >
                   <div

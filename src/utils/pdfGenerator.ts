@@ -201,7 +201,7 @@ export async function generatePdfBlobFromElement(
       scale: 2.2, // Ultra-sharp 300+ DPI
       width: 1040, // Strict official width
       windowWidth: 1200, // Virtual desktop window width prevents mobile text squeeze
-      windowHeight: 900,
+      windowHeight: 1400,
       useCORS: true,
       allowTaint: true,
       logging: false,

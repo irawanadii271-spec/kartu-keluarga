@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TranslationResult, FamilyMember } from '../types';
+import { TranslationResult, FamilyMember, VOCABULARY } from '../types';
 
 interface PreviewSheetProps {
   data: TranslationResult;
@@ -7,8 +7,8 @@ interface PreviewSheetProps {
   showColumnIndices?: boolean;
 }
 
-// Clean any accidental Latin annotations in parentheses e.g. "(WNI)" or "(Kota)"
-function toPureJapanese(val: string | undefined): string {
+// Clean any accidental Latin annotations in parentheses and translate Indonesian terminology to Japanese
+function translateToJapanese(val: string | undefined, category?: keyof typeof VOCABULARY): string {
   if (!val) return '';
   const trimmed = String(val).trim();
 
@@ -18,8 +18,32 @@ function toPureJapanese(val: string | undefined): string {
     return matchJp[1].trim();
   }
 
+  // Look up in specified VOCABULARY category
+  if (category && VOCABULARY[category]) {
+    const dict = VOCABULARY[category] as Record<string, string>;
+    for (const [k, v] of Object.entries(dict)) {
+      if (k.toLowerCase() === trimmed.toLowerCase()) {
+        return v;
+      }
+    }
+  }
+
+  // Search in all categories of VOCABULARY (e.g. relationStatus, maritalStatus, religion, education, occupation)
+  for (const dict of Object.values(VOCABULARY)) {
+    for (const [k, v] of Object.entries(dict as Record<string, string>)) {
+      if (k.toLowerCase() === trimmed.toLowerCase()) {
+        return String(v);
+      }
+    }
+  }
+
   // Remove any remaining Latin parenthesized info like "(WNI)", "(Kelurahan)", "(Kota Jakarta)"
   return trimmed.replace(/\s*\([a-zA-Z\s.,/0-9-]+\)/g, '').trim();
+}
+
+// Backward-compatible alias
+function toPureJapanese(val: string | undefined): string {
+  return translateToJapanese(val);
 }
 
 export const PreviewSheet: React.FC<PreviewSheetProps> = ({
@@ -32,7 +56,7 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
 
   const handleStartEdit = (cellKey: string, currentValue: string) => {
     setEditingCell(cellKey);
-    setInlineEditValue(currentValue || '');
+    setInlineEditValue(currentValue && currentValue !== '-' ? currentValue : '');
   };
 
   const handleSaveEdit = (cellKey: string) => {
@@ -41,13 +65,36 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
       const memberIndex = parseInt(parts[1], 10);
       const field = parts[2] as keyof FamilyMember;
       const updatedMembers = [...data.members];
-      if (updatedMembers[memberIndex]) {
-        updatedMembers[memberIndex] = {
-          ...updatedMembers[memberIndex],
-          [field]: inlineEditValue,
-        };
-        onUpdateData({ ...data, members: updatedMembers });
+
+      // Auto-pad members array up to memberIndex so any row (1..10) can be directly edited and saved
+      while (updatedMembers.length <= memberIndex) {
+        const nextNo = updatedMembers.length + 1;
+        updatedMembers.push({
+          no: nextNo,
+          fullNameOriginal: '',
+          fullNameKatakana: '',
+          nik: '',
+          gender: '男',
+          birthPlace: '',
+          birthDate: '',
+          religion: 'イスラム教',
+          education: '高校卒業',
+          occupation: '会社員',
+          maritalStatus: '未婚',
+          relationStatus: '子',
+          fatherName: '',
+          motherName: '',
+          passportNumber: '-',
+          stayPermitNumber: '-',
+          nationality: 'インドネシア',
+        });
       }
+
+      updatedMembers[memberIndex] = {
+        ...updatedMembers[memberIndex],
+        [field]: inlineEditValue,
+      };
+      onUpdateData({ ...data, members: updatedMembers });
     } else if (parts[0] === 'address' && parts.length === 2) {
       const addrField = parts[1] as keyof typeof data.address;
       onUpdateData({
@@ -57,7 +104,8 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
           [addrField]: inlineEditValue,
         },
       });
-    } else if (cellKey in data) {
+    } else {
+      // Direct root fields: signatoryOfficer, signatoryNip, headOfFamily, familyCardNumber, issuedDate, issuedPlace
       onUpdateData({
         ...data,
         [cellKey]: inlineEditValue,
@@ -543,57 +591,85 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
                       </div>
                     </td>
                     <td className="text-center" style={{ width: '10.5%', height: '26px', verticalAlign: 'middle', fontWeight: 400 }}>
-                      {member
-                        ? renderCell(`members.${index}.maritalStatus`, toPureJapanese(member.maritalStatus), 'center', '-', { fontSize: '8.2pt', fontWeight: 400 })
-                        : renderCell(`members.${index}.maritalStatus`, '-', 'center', '-', { fontWeight: 400 })}
+                      {renderCell(
+                        `members.${index}.maritalStatus`,
+                        member ? translateToJapanese(member.maritalStatus, 'maritalStatus') : '',
+                        'center',
+                        '-',
+                        { fontSize: '8.2pt', fontWeight: 400 }
+                      )}
                     </td>
                     <td className="text-center" style={{ width: '12%', height: '26px', verticalAlign: 'middle', fontWeight: 400 }}>
-                      {member
-                        ? renderCell(`members.${index}.relationStatus`, toPureJapanese(member.relationStatus), 'center', '-', { fontSize: '8.2pt', fontWeight: 400 })
-                        : renderCell(`members.${index}.relationStatus`, '-', 'center', '-', { fontWeight: 400 })}
+                      {renderCell(
+                        `members.${index}.relationStatus`,
+                        member ? translateToJapanese(member.relationStatus, 'relationStatus') : '',
+                        'center',
+                        '-',
+                        { fontSize: '8.2pt', fontWeight: 400 }
+                      )}
                     </td>
                     <td className="text-center" style={{ width: '10%', height: '26px', verticalAlign: 'middle', padding: '0 2px', fontWeight: 400 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '26px' }}>
-                        <span style={{ display: 'inline-block', lineHeight: '1.2', fontSize: '8.2pt', fontWeight: 400 }}>{member ? 'インドネシア' : '-'}</span>
-                      </div>
+                      {renderCell(
+                        `members.${index}.nationality`,
+                        member ? (member.nationality || 'インドネシア') : '',
+                        'center',
+                        '-',
+                        { fontSize: '8.2pt', fontWeight: 400 }
+                      )}
                     </td>
                     <td className="text-center" style={{ width: '16%', height: '26px', verticalAlign: 'middle', fontWeight: 400 }}>
-                      {member
-                        ? renderCell(`members.${index}.passportNumber`, member.passportNumber || '-', 'center', '-', {
-                            fontSize: '8pt',
-                            fontFamily: 'Arial, Calibri, -apple-system, sans-serif',
-                            fontWeight: 400,
-                          })
-                        : renderCell(`members.${index}.passportNumber`, '-', 'center', '-', { fontWeight: 400 })}
+                      {renderCell(
+                        `members.${index}.passportNumber`,
+                        member ? (member.passportNumber && member.passportNumber !== '-' ? member.passportNumber : '') : '',
+                        'center',
+                        '-',
+                        {
+                          fontSize: '8pt',
+                          fontFamily: 'Arial, Calibri, -apple-system, sans-serif',
+                          fontWeight: 400,
+                        }
+                      )}
                     </td>
                     <td className="text-center" style={{ width: '16%', height: '26px', verticalAlign: 'middle', fontWeight: 400 }}>
-                      {member
-                        ? renderCell(`members.${index}.stayPermitNumber`, member.stayPermitNumber || '-', 'center', '-', {
-                            fontSize: '8pt',
-                            fontFamily: 'Arial, Calibri, -apple-system, sans-serif',
-                            fontWeight: 400,
-                          })
-                        : renderCell(`members.${index}.stayPermitNumber`, '-', 'center', '-', { fontWeight: 400 })}
+                      {renderCell(
+                        `members.${index}.stayPermitNumber`,
+                        member ? (member.stayPermitNumber && member.stayPermitNumber !== '-' ? member.stayPermitNumber : '') : '',
+                        'center',
+                        '-',
+                        {
+                          fontSize: '8pt',
+                          fontFamily: 'Arial, Calibri, -apple-system, sans-serif',
+                          fontWeight: 400,
+                        }
+                      )}
                     </td>
                     <td className="text-left" style={{ width: '16%', height: '26px', verticalAlign: 'middle', fontWeight: 400 }}>
-                      {member
-                        ? renderCell(`members.${index}.fatherName`, toPureJapanese(member.fatherName), 'left', '-', {
-                            fontSize: '8.2pt',
-                            fontWeight: 400,
-                            paddingLeft: '5px',
-                            paddingRight: '2px',
-                          })
-                        : renderCell(`members.${index}.fatherName`, '-', 'center', '-', { fontWeight: 400 })}
+                      {renderCell(
+                        `members.${index}.fatherName`,
+                        member ? translateToJapanese(member.fatherName) : '',
+                        'left',
+                        '-',
+                        {
+                          fontSize: '8.2pt',
+                          fontWeight: 400,
+                          paddingLeft: '5px',
+                          paddingRight: '2px',
+                        }
+                      )}
                     </td>
                     <td className="text-left" style={{ width: '16%', height: '26px', verticalAlign: 'middle', fontWeight: 400 }}>
-                      {member
-                        ? renderCell(`members.${index}.motherName`, toPureJapanese(member.motherName), 'left', '-', {
-                            fontSize: '8.2pt',
-                            fontWeight: 400,
-                            paddingLeft: '5px',
-                            paddingRight: '2px',
-                          })
-                        : renderCell(`members.${index}.motherName`, '-', 'center', '-', { fontWeight: 400 })}
+                      {renderCell(
+                        `members.${index}.motherName`,
+                        member ? translateToJapanese(member.motherName) : '',
+                        'left',
+                        '-',
+                        {
+                          fontSize: '8.2pt',
+                          fontWeight: 400,
+                          paddingLeft: '5px',
+                          paddingRight: '2px',
+                        }
+                      )}
                     </td>
                   </tr>
                 );
@@ -604,7 +680,7 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
 
         {/* ================= FOOTER SECTION ================= */}
         <div
-          className="grid grid-cols-12 gap-3 text-[8pt] leading-tight items-start pt-1"
+          className="grid grid-cols-12 gap-3 text-[8pt] leading-tight items-start pt-2"
           style={{ color: '#000000', fontSize: '8pt' }}
         >
           {/* Kolom Kiri: 発行日 & 4 Lembar Resmi */}
@@ -614,16 +690,12 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
                 発行日
               </span>
               <span className="w-3 text-center font-bold" style={{ color: '#000000' }}>:</span>
-              <div className="pl-1" style={{ color: '#000000', fontFamily: 'Arial, Calibri, "Yu Gothic", sans-serif', fontWeight: 400 }}>
-                {data.issuedDate ? (
-                  renderCell('issuedDate', data.issuedDate, 'left', '-', {
-                    fontSize: '8pt',
-                    fontFamily: 'Arial, Calibri, "Yu Gothic", sans-serif',
-                    fontWeight: 400,
-                  })
-                ) : (
-                  <span>(Tahun)&nbsp;&nbsp;&nbsp;&nbsp;(Bulan)&nbsp;&nbsp;&nbsp;&nbsp;(Tanggal)</span>
-                )}
+              <div className="pl-1 flex-1" style={{ color: '#000000', fontFamily: 'Arial, Calibri, "Yu Gothic", sans-serif', fontWeight: 400 }}>
+                {renderCell('issuedDate', data.issuedDate, 'left', '-', {
+                  fontSize: '8pt',
+                  fontFamily: 'Arial, Calibri, "Yu Gothic", sans-serif',
+                  fontWeight: 400,
+                })}
               </div>
             </div>
 
@@ -660,8 +732,8 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
             </div>
           </div>
 
-          {/* Kolom Tengah: 家長, （署名）, Garis, 指印又は署名 */}
-          <div className="col-span-4 text-center px-4 flex flex-col justify-between h-[105px]">
+          {/* Kolom Tengah: 家長, （署名）, Nama Kepala Keluarga, Garis, 指印又は署名 */}
+          <div className="col-span-4 text-center px-2 flex flex-col justify-between min-h-[110px]">
             <div>
               <div className="tracking-wider" style={{ color: '#000000', fontSize: '9pt', fontWeight: 700 }}>
                 家長
@@ -669,16 +741,21 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
               <div className="mt-0.5" style={{ color: '#000000', fontSize: '7.5pt', fontWeight: 400 }}>（署名）</div>
             </div>
             <div>
-              <div style={{ borderBottom: '1px solid #000000', width: '180px', margin: '0 auto 6px auto', height: '0px' }}></div>
-              <div className="tracking-wide text-center" style={{ color: '#000000', fontSize: '7.8pt', fontWeight: 400, minHeight: '14px', lineHeight: '1.2', marginBottom: '2px' }}>
+              <div className="text-center font-bold pb-1" style={{ color: '#000000', fontSize: '8pt', minHeight: '18px' }}>
+                {renderCell('headOfFamily', headOfFamilyDisplay, 'center', '-', {
+                  fontSize: '8pt',
+                  fontWeight: 700,
+                })}
+              </div>
+              <div style={{ borderBottom: '1px solid #000000', width: '180px', margin: '0 auto 4px auto', height: '0px' }}></div>
+              <div className="tracking-wide text-center" style={{ color: '#000000', fontSize: '7.8pt', fontWeight: 400, minHeight: '14px', lineHeight: '1.2' }}>
                 指印又は署名
               </div>
-              <div style={{ height: '14px' }}></div>
             </div>
           </div>
 
-          {/* Kolom Kanan: 民事登録事務官, （署名）（公印）, Garis Signature, NIP & 公務員番号 */}
-          <div className="col-span-4 text-center px-4 flex flex-col justify-between h-[105px]">
+          {/* Kolom Kanan: 民事登録事務官, （署名）（公印）, Nama Pejabat (signatoryOfficer), Garis, NIP (signatoryNip) & 公務員番号 */}
+          <div className="col-span-4 text-center px-2 flex flex-col justify-between min-h-[110px]">
             <div>
               <div className="tracking-wider" style={{ color: '#000000', fontSize: '9pt', fontWeight: 700 }}>
                 民事登録事務官
@@ -686,9 +763,19 @@ export const PreviewSheet: React.FC<PreviewSheetProps> = ({
               <div className="mt-0.5" style={{ color: '#000000', fontSize: '7.5pt', fontWeight: 400 }}>（署名）（公印）</div>
             </div>
             <div>
-              <div style={{ borderBottom: '1px solid #000000', width: '180px', margin: '0 auto 6px auto', height: '0px' }}></div>
-              <div className="text-center tracking-wider" style={{ color: '#000000', fontFamily: 'Arial, Calibri, -apple-system, sans-serif', fontSize: '7.8pt', fontWeight: 400, minHeight: '14px', lineHeight: '1.2', marginBottom: '2px' }}>
-                {data.signatoryNip || ''}
+              <div className="text-center font-bold pb-1" style={{ color: '#000000', fontSize: '8pt', minHeight: '18px' }}>
+                {renderCell('signatoryOfficer', data.signatoryOfficer, 'center', '-', {
+                  fontSize: '8pt',
+                  fontWeight: 700,
+                })}
+              </div>
+              <div style={{ borderBottom: '1px solid #000000', width: '180px', margin: '0 auto 4px auto', height: '0px' }}></div>
+              <div className="text-center tracking-wider pb-0.5" style={{ color: '#000000', fontFamily: 'Arial, Calibri, -apple-system, sans-serif', fontSize: '7.8pt', fontWeight: 400, minHeight: '14px', lineHeight: '1.2' }}>
+                {renderCell('signatoryNip', data.signatoryNip, 'center', '-', {
+                  fontSize: '7.8pt',
+                  fontFamily: 'Arial, Calibri, -apple-system, sans-serif',
+                  fontWeight: 400,
+                })}
               </div>
               <div className="tracking-wide text-center" style={{ color: '#000000', fontSize: '7.8pt', fontWeight: 400 }}>
                 公務員番号

@@ -706,51 +706,6 @@ export const InputModule: React.FC<InputModuleProps> = ({
                             </div>
                           </div>
 
-                          {/* Hubungan Keluarga & Status Perkawinan (Dropdown Pilihan Cepat) */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Status Hubungan Keluarga (続柄) - Pilih:
-                              </label>
-                              <select
-                                value={member.relationStatus}
-                                onChange={(e) => updateMember(index, 'relationStatus', e.target.value)}
-                                className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
-                              >
-                                <option value="">-- Pilih Hubungan Keluarga --</option>
-                                {RELATION_STATUS_OPTIONS.map((item) => (
-                                  <option key={item.idKey} value={item.jpVal}>
-                                    {item.jpVal} — {item.idKey}
-                                  </option>
-                                ))}
-                                {!RELATION_STATUS_OPTIONS.some((i) => i.jpVal === member.relationStatus) && member.relationStatus && (
-                                  <option value={member.relationStatus}>{member.relationStatus} (Kustom)</option>
-                                )}
-                              </select>
-                            </div>
-
-                            <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Status Perkawinan (婚姻状況) - Pilih:
-                              </label>
-                              <select
-                                value={member.maritalStatus}
-                                onChange={(e) => updateMember(index, 'maritalStatus', e.target.value)}
-                                className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
-                              >
-                                <option value="">-- Pilih Status Perkawinan --</option>
-                                {MARITAL_STATUS_OPTIONS.map((item) => (
-                                  <option key={item.idKey} value={item.jpVal}>
-                                    {item.jpVal} — {item.idKey}
-                                  </option>
-                                ))}
-                                {!MARITAL_STATUS_OPTIONS.some((i) => i.jpVal === member.maritalStatus) && member.maritalStatus && (
-                                  <option value={member.maritalStatus}>{member.maritalStatus} (Kustom)</option>
-                                )}
-                              </select>
-                            </div>
-                          </div>
-
                           {/* Agama, Pendidikan, Pekerjaan (Pilihan Dropdown Terkategori) */}
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             {/* Agama */}
@@ -864,61 +819,126 @@ export const InputModule: React.FC<InputModuleProps> = ({
                             </div>
                           </div>
 
-                          {/* Dokumen Imigrasi (Paspor & Izin Tinggal) */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-                            <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                No. Paspor (パスポート番号)
-                              </label>
-                              <input
-                                type="text"
-                                value={member.passportNumber || ''}
-                                onChange={(e) => updateMember(index, 'passportNumber', e.target.value)}
-                                className="w-full text-xs font-mono px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                                placeholder="A 1234567 atau -"
-                              />
+                          {/* ================= BAGIAN KEDUA: TABEL 2 (STATUS, PASPOR & ORANG TUA) ================= */}
+                          <div className="pt-2 mt-2 border-t-2 border-dashed border-blue-200">
+                            <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-blue-50 rounded-md text-blue-900 font-bold text-[11px]">
+                              <span>📑 Bagian Kedua: Status, Hubungan, Paspor & Orang Tua (Tabel 2 Bawah)</span>
                             </div>
 
-                            <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                No. Dokumen Tinggal / KITAS (在留資格認定書番号)
-                              </label>
-                              <input
-                                type="text"
-                                value={member.stayPermitNumber || ''}
-                                onChange={(e) => updateMember(index, 'stayPermitNumber', e.target.value)}
-                                className="w-full text-xs font-mono px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                                placeholder="2C11AA000000 atau -"
-                              />
-                            </div>
-                          </div>
+                            {/* Hubungan Keluarga & Status Perkawinan & Kewarganegaraan */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                                  Status Perkawinan (現状 / 婚姻状況)
+                                </label>
+                                <select
+                                  value={member.maritalStatus}
+                                  onChange={(e) => updateMember(index, 'maritalStatus', e.target.value)}
+                                  className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
+                                >
+                                  <option value="">-- Pilih Status Perkawinan --</option>
+                                  {MARITAL_STATUS_OPTIONS.map((item) => (
+                                    <option key={item.idKey} value={item.jpVal}>
+                                      {item.jpVal} — {item.idKey}
+                                    </option>
+                                  ))}
+                                  {!MARITAL_STATUS_OPTIONS.some((i) => i.jpVal === member.maritalStatus) && member.maritalStatus && (
+                                    <option value={member.maritalStatus}>{member.maritalStatus} (Kustom)</option>
+                                  )}
+                                </select>
+                              </div>
 
-                          {/* Nama Ayah & Ibu */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-                            <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Nama Ayah (父の氏名 - Latin & Katakana)
-                              </label>
-                              <input
-                                type="text"
-                                value={member.fatherName}
-                                onChange={(e) => updateMember(index, 'fatherName', e.target.value)}
-                                className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                                placeholder="SOEKARNO (スカルノ)"
-                              />
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                                  Hubungan Keluarga (家族関係 / 続柄)
+                                </label>
+                                <select
+                                  value={member.relationStatus}
+                                  onChange={(e) => updateMember(index, 'relationStatus', e.target.value)}
+                                  className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none bg-white font-medium"
+                                >
+                                  <option value="">-- Pilih Hubungan Keluarga --</option>
+                                  {RELATION_STATUS_OPTIONS.map((item) => (
+                                    <option key={item.idKey} value={item.jpVal}>
+                                      {item.jpVal} — {item.idKey}
+                                    </option>
+                                  ))}
+                                  {!RELATION_STATUS_OPTIONS.some((i) => i.jpVal === member.relationStatus) && member.relationStatus && (
+                                    <option value={member.relationStatus}>{member.relationStatus} (Kustom)</option>
+                                  )}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                                  Kewarganegaraan (国籍)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={member.nationality || 'インドネシア'}
+                                  onChange={(e) => updateMember(index, 'nationality', e.target.value)}
+                                  className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                  placeholder="インドネシア (Indonesia)"
+                                />
+                              </div>
                             </div>
 
-                            <div>
-                              <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
-                                Nama Ibu (母の氏名 - Latin & Katakana)
-                              </label>
-                              <input
-                                type="text"
-                                value={member.motherName}
-                                onChange={(e) => updateMember(index, 'motherName', e.target.value)}
-                                className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                                placeholder="SITI AMINAH (シティ・アミナ)"
-                              />
+                            {/* Dokumen Imigrasi (Paspor & Izin Tinggal) */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                                  No. Paspor (パスポート番号)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={member.passportNumber || ''}
+                                  onChange={(e) => updateMember(index, 'passportNumber', e.target.value)}
+                                  className="w-full text-xs font-mono px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                  placeholder="A 1234567 atau -"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                                  No. Dokumen Tinggal / KITAS (在留資格認定書番号)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={member.stayPermitNumber || ''}
+                                  onChange={(e) => updateMember(index, 'stayPermitNumber', e.target.value)}
+                                  className="w-full text-xs font-mono px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                  placeholder="2C11AA000000 atau -"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Nama Ayah & Ibu */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                                  Nama Ayah (父の氏名)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={member.fatherName || ''}
+                                  onChange={(e) => updateMember(index, 'fatherName', e.target.value)}
+                                  className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                  placeholder="SOEKARNO (スカルノ)"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                                  Nama Ibu (母の氏名)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={member.motherName || ''}
+                                  onChange={(e) => updateMember(index, 'motherName', e.target.value)}
+                                  className="w-full text-xs px-2 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                  placeholder="SITI AMINAH (シティ・アミナ)"
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>

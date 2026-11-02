@@ -23,6 +23,7 @@ export interface FamilyMember {
   motherName: string;
   passportNumber?: string;
   stayPermitNumber?: string;
+  nationality?: string;
 }
 
 export interface FamilyAddress {
